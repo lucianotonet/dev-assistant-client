@@ -1,11 +1,12 @@
 import socket
 import os
 import getpass
-import requests
+import http.client
 import argparse
 import json
 
-API_URL = 'https://devassistant.tonet.dev/api/'
+API_URL = 'devassistant.tonet.dev'
+API_PATH = '/api'
 TOKEN_FILE = os.path.expanduser("~/.dev_assistant_token")
 USER_DATA = os.path.expanduser("~/.dev_assistant_user")
 
@@ -41,56 +42,66 @@ def connect():
         token = f.read()
 
     headers = {
-        'Authorization': 'Bearer ' + token,
+        'authorization': 'Bearer ' + token,
+        'accept': 'application/json'
     }
 
-    # Se a API_URL do seu servidor Laravel contém ".test", você pode desativar a verificação SSL
-    verify = False if ".test" in API_URL else True
+    conn = http.client.HTTPSConnection(API_URL)
+    conn.request("GET", API_PATH, headers=headers)
+    response = conn.getresponse()
 
-    try:
-        # Enviar uma solicitação GET para o servidor
-        response = requests.get(API_URL, headers=headers,
-                                verify=verify, timeout=5)
-
-        # Verificar se a solicitação foi bem-sucedida
-        if response.status_code == 200:
-            print("Successfully connected to the server.")
-            print("Server response:", response.text)
-        else:
-            print("Failed to connect to the server.")
-            print("Status code:", response.status_code)
-
-    except requests.exceptions.RequestException as e:
-        # Se ocorrer um erro de rede, imprimir uma mensagem de erro
-        print("An error occurred:", e)
+    if response.status == 200:
+        print("Successfully connected to the server.")
+        print("Server response:", response.read().decode())
+    else:
+        print("Failed to connect to the server.")
+        print("Response: ", response.read().decode())
+        print("Status code:", response.status)
 
 
 def login(args):
-    email = input("E-mail: ")
-    password = getpass.getpass("Password: ")
+    email = input("Enter your e-mail: ")
+    password = getpass.getpass("Enter your password: ")
 
-    response = requests.post(API_URL + 'login', data={
+    payload = json.dumps({
         'email': email,
         'password': password,
         'device_name': socket.gethostname()
     })
 
-    if response.status_code == 200:
+    headers = {
+        'Content-Type': 'application/json',
+        'accept': 'application/json'
+    }
+
+    conn = http.client.HTTPSConnection(API_URL)
+    conn.request("POST", API_PATH + 'login', body=payload, headers=headers)
+    response = conn.getresponse()
+
+    if response.status == 200:
+        token = response.read().decode()
         with open(TOKEN_FILE, "w") as f:
-            f.write(response.text)
+            f.write(token)
         print("Logged in.")
-        # Get the user's details and print greetings message
-        response = requests.get(API_URL + 'user', headers={
-            'Authorization': 'Bearer ' + response.text,
-        })
-        response = response.json()
-        if 'name' in response:
+
+        headers = {
+            'authorization': 'Bearer ' + token,
+            'accept': 'application/json'
+        }
+
+        conn.request("GET", API_PATH + 'user', headers=headers)
+        response = conn.getresponse()
+        user = json.loads(response.read().decode())
+
+        if 'name' in user:
             with open(USER_DATA, "w") as f:
-                json.dump(response, f)
-            print("Hello,", response['name'])
+                json.dump(user, f)
+            print("Hello,", user['name'])
+
         connect()
     else:
-        print("Failed to log in.")
+        print("Failed to log in!")
+        print("Error: ", response.read().decode())
 
 
 def logout(args):
