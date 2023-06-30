@@ -1,8 +1,19 @@
 # Dev Assistant - Local Client
 
-Welcome to the Dev Assistant Local Client, the heart of the [Dev Assistant](https://devassistant.tonet.dev) plugin for ChatGPT. This tool empowers developers by executing tasks directly on their local machines, under the guidance of ChatGPT.
+Welcome to the Dev Assistant Local Client, the core component of the [Dev Assistant](https://devassistant.tonet.dev) plugin for ChatGPT. This tool empowers developers by executing tasks directly on their local machines, under the guidance of ChatGPT.
 
-The Dev Assistant Local Client is a Python package that runs a server on your local machine. It receives instructions from ChatGPT via a websocket connection, orchestrated by the [Dev Assistant Server](https://devassistant.tonet.dev).
+The Dev Assistant Local Client is a Python package that runs a server on your local machine. It receives instructions from ChatGPT via a WebSocket connection, orchestrated by the [Dev Assistant Server](https://devassistant.tonet.dev).
+
+## Features
+
+The Dev Assistant Local Client is designed to streamline your development process by providing a range of functionalities:
+
+- **File Management**: Create, read, update, and delete files. List the contents of a directory.
+- **Git Version Control**: Initialize a Git repository, add changes to the staging area, commit changes, and push changes to a remote repository. Get the status of the Git repository.
+- **Terminal Commands Execution**: Execute commands directly in the terminal.
+- **Web Search**: Perform web searches using various search engines.
+- **AutoGPT Execution**: Execute tasks with an implementation of AutoGPT.
+- **Log Viewing**: Read terminal logs from the terminal.log file.
 
 ## Requirements
 
