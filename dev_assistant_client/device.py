@@ -1,3 +1,7 @@
+import logging
+import os
+import sys
+from pusherclient import Pusher
 import getpass
 import http.client
 import json
@@ -7,13 +11,12 @@ import time
 import uuid
 import re
 from colorama import Fore, Style
-import pusher
-from dev_assistant_client.utils import TOKEN_FILE, APP_URL, API_PATH
+from dev_assistant_client.utils import TOKEN_FILE, APP_URL, API_PATH, PUSHER_APP_KEY, PUSHER_APP_SECRET, PUSHER_APP_ID
 
 
 def get_device_id():
     try:
-        with open('device_id', 'r') as f:
+        with open('.device_id', 'r') as f:
             return f.read()
     except FileNotFoundError:
         return None
@@ -36,6 +39,7 @@ def create_device_payload():
         'username': getpass.getuser(),
     }, indent=4)
 
+
 def connect():
     with open(TOKEN_FILE, "r") as f:
         token = f.read()
@@ -47,9 +51,8 @@ def connect():
     }
 
     payload = create_device_payload()
-    
+
     print("Connecting to the server...")
-    # print(Fore.LIGHTGREEN_EX + payload + Style.RESET_ALL)
 
     conn = http.client.HTTPSConnection(APP_URL)
     conn.request("POST", API_PATH + '/devices/connect',
@@ -58,26 +61,47 @@ def connect():
 
     if response.status == 200:
         print(Fore.LIGHTGREEN_EX + "Successfully connected!" + Style.RESET_ALL)
-        print("Server response: ", response.read().decode())
+        response_body = response.read().decode()
+        # print("Server response: ", response_body)
+        device_data = json.loads(response_body)
+        with open('.device_id', 'w') as f:
+            f.write(device_data['id'])
+        connect_to_pusher()
     else:
-        print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
-        print("Response: ", response.read().decode())
-        print("Status code: ", response.status)
+        if response.status == 401:
+            print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
+            print("Error: ", response.read().decode())
+            print("Please log in again.")
+            os.remove(TOKEN_FILE)
+        else:
+            print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
+            print("Response: ", response.read().decode())
+            print("Status code: ", response.status)
 
-def wsConnect():
-    pusher_client = pusher.Pusher(
-        app_id='1626464',
-        key='5ed50462cadb0ee89c69',
-        secret='6494511d80820ffe943a',
-        cluster='sa1',
-        ssl=True
-    )
 
-    def callback(data):
-        print('Received event: ' + str(data))
+def connect_to_pusher():
+    # Add a logging handler so we can see the raw communication data
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    ch = logging.StreamHandler(sys.stdout)
+    root.addHandler(ch)
 
-    pusher_client.subscribe('my-channel')
-    pusher_client.bind('my-event', callback)
+    global pusher
+
+    # We can't subscribe until we've connected, so we use a callback handler
+    # to subscribe when able
+    def connect_handler(data):
+        channel = pusher.subscribe('dev-assistant')
+        channel.bind('my-event', callback)
+
+    pusher = Pusher(key=PUSHER_APP_KEY, secret=PUSHER_APP_SECRET,
+                    secure=True, log_level=logging.INFO)
+    pusher.connection.bind('pusher:connection_established', connect_handler)
+    pusher.connect()
 
     while True:
-        time.sleep(1)  # Keep the program running.
+        time.sleep(1)
+
+
+def callback(data):
+    print('Received event with data: %s' % data)

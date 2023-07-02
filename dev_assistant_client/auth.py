@@ -29,21 +29,24 @@ def login(args):
         token = response.read().decode()
         with open(TOKEN_FILE, "w") as f:
             f.write(token)
-        print(Fore.GREEN + "Logged in." + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "Logged in." + Style.RESET_ALL)
 
         headers = {
             'authorization': 'Bearer ' + token,
+            'content-type': 'application/json',
             'accept': 'application/json'
         }
 
         conn.request("GET", API_PATH + '/user', headers=headers)
         response = conn.getresponse()
-        user = json.loads(response.read().decode())
+        
+        if response.status == 200:
+            user = json.loads(response.read().decode())
 
-        if 'name' in user:
-            with open(USER_DATA, "w") as f:
-                json.dump(user, f)
-            print(Fore.GREEN + "Hello,", user['name'] + Style.RESET_ALL)
+            if 'name' in user:
+                with open(USER_DATA, "w") as f:
+                    json.dump(user, f)
+                print(Fore.LIGHTGREEN_EX + "Hello, " + user['name'] + " 👋🏼!" + Style.RESET_ALL)
 
         connect()
     else:
@@ -59,7 +62,7 @@ def logout(args):
 
         headers = {
             'authorization': 'Bearer ' + token,
-            'content-Type': 'application/json',
+            'content-type': 'application/json',
             'accept': 'application/json'
         }
 
