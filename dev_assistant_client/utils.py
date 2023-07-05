@@ -6,6 +6,9 @@ APP_URL = os.getenv('APP_URL').replace('https://', '').replace('/', '')
 API_PATH = '/api'
 TOKEN_FILE = os.path.expanduser("~/.dev_assistant_token")
 USER_DATA = os.path.expanduser("~/.dev_assistant_user")
+
+ABLY_KEY = os.getenv('ABLY_KEY')
+
 PUSHER_APP_ID = os.getenv('PUSHER_APP_ID')
 PUSHER_APP_KEY = os.getenv('PUSHER_APP_KEY')
 PUSHER_APP_SECRET = os.getenv('PUSHER_APP_SECRET')

@@ -1,3 +1,4 @@
+import asyncio
 from pusherclient import Pusher
 import argparse
 import os
@@ -5,10 +6,9 @@ import time
 from dotenv import load_dotenv
 from colorama import Fore, Style
 from dev_assistant_client.auth import login, logout
+from dev_assistant_client.device import connect, connect_to_ably
 from dev_assistant_client.utils import APP_URL, TOKEN_FILE, PUSHER_APP_ID, PUSHER_APP_KEY, PUSHER_APP_SECRET, PUSHER_APP_CLUSTER
-from dev_assistant_client.device import connect
 from pusher import Pusher
-
 import pkg_resources
 
 # Get the version of the current package
@@ -26,7 +26,7 @@ print(Fore.LIGHTGREEN_EX +
 load_dotenv()
 
 
-def main(args=None):
+async def main(args=None):
     # Parse command line arguments
     parser = argparse.ArgumentParser(prog='dev-assistant')
     subparsers = parser.add_subparsers()
@@ -42,22 +42,28 @@ def main(args=None):
 
     if 'func' in args:
         try:
-            args.func(args)
+            await args.func(args)
         except Exception as e:
             print(f"An error occurred: {e}")
     else:
-        start(args)
-                
-def start(args):
+        await start(args)
+
+
+async def start(args):
     # Check if the user is logged in, if not, prompt for login
     if not os.path.exists(TOKEN_FILE):
         login(args)
-        start(args)        
+        await start(args)
     else:
         try:
-            connect()
+            await connect()
         except Exception as e:
-            print(f"Failed to start: {e}")        
-        
+            print(f"Failed to start: {e}")
+
+
+def run():
+    asyncio.run(main())
+
+
 if __name__ == "__main__":
-    main()
+    run()

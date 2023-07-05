@@ -14,7 +14,7 @@ setup(
     install_requires=required,
     entry_points={
         'console_scripts': [
-            'dev-assistant=dev_assistant_client.main:main',
+            'dev-assistant=dev_assistant_client.main:run',
         ],
     },
 )
