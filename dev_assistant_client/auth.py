@@ -2,10 +2,16 @@ import getpass
 import http.client
 import json
 import os
+import ably
 from colorama import Fore, Style
-from dev_assistant_client.utils import TOKEN_FILE, USER_DATA, APP_URL, API_PATH
-from dev_assistant_client.device import connect
+from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE
 
+HEADERS = {
+    'content-type': 'application/json',
+    'accept': 'application/json'
+}
+
+CONN = http.client.HTTPSConnection(APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
 
 def login(args):
     email = input("Enter your email: ")
@@ -16,14 +22,8 @@ def login(args):
         'password': password,
     })
 
-    headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json'
-    }
-
-    conn = http.client.HTTPSConnection(APP_URL)
-    conn.request("POST", API_PATH + '/login', body=payload, headers=headers)
-    response = conn.getresponse()
+    CONN.request("POST", API_PATH + '/login', body=payload, headers=HEADERS)
+    response = CONN.getresponse()
 
     if response.status == 200:
         token = response.read().decode()
@@ -37,43 +37,36 @@ def login(args):
             'accept': 'application/json'
         }
 
-        conn.request("GET", API_PATH + '/user', headers=headers)
-        response = conn.getresponse()
-        
+        # Request user data
+        CONN.request("GET", API_PATH + '/user', headers=headers)
+        response = CONN.getresponse()
+
         if response.status == 200:
             user = json.loads(response.read().decode())
 
             if 'name' in user:
-                with open(USER_DATA, "w") as f:
+                with open(USER_DATA_FILE, "w") as f:
                     json.dump(user, f)
-                print(Fore.LIGHTGREEN_EX + "Hello, " + user['name'] + " 👋🏼!" + Style.RESET_ALL)
+                print(Fore.LIGHTGREEN_EX + "Hello, " +
+                      user['name'] + " 👋🏼!" + Style.RESET_ALL)
 
-        connect()
     else:
         print(Fore.RED + "Failed to log in!" + Style.RESET_ALL)
         print("Error: ", response.read().decode())
 
 
 def logout(args):
-    if os.path.exists(TOKEN_FILE):
-        with open(TOKEN_FILE, "r") as f:
-            token = f.readline()
-        os.remove(TOKEN_FILE)
+    with open(TOKEN_FILE, "r") as f:
+        token = f.readline()
 
-        headers = {
-            'authorization': 'Bearer ' + token,
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        }
+    HEADERS['authorization'] = 'Bearer ' + token
+    CONN.request("POST", API_PATH + '/logout', headers=HEADERS)
+    response = CONN.getresponse()
 
-        conn = http.client.HTTPSConnection(APP_URL)
-        conn.request("POST", API_PATH + '/logout', headers=headers)
-        response = conn.getresponse()
+    if response.status == 200:
+        print("Logged out.")
+    else:
+        print("Failed to log out!")
 
-        if response.status == 200:
-            if os.path.exists(USER_DATA):
-                with open(USER_DATA, "r") as f:
-                    user = json.load(f)
-                print("See you soon,", user['name'])
-                os.remove(USER_DATA)
-            print("Logged out.")
+    os.remove(USER_DATA_FILE)
+    os.remove(TOKEN_FILE)

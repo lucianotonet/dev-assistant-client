@@ -1,33 +1,16 @@
 import asyncio
-import threading
-from pusherclient import Pusher
-import requests
-import logging
 import os
-import sys
 import getpass
 import http.client
 import json
 import platform
 import socket
-import time
 import uuid
 import re
 import ably
 from colorama import Fore, Style
-from dev_assistant_client.utils import TOKEN_FILE, APP_URL, API_PATH, PUSHER_APP_KEY, PUSHER_APP_SECRET, PUSHER_APP_ID, ABLY_KEY
-
-
-def get_device_id():
-    try:
-        with open('.device_id', 'r') as f:
-            return f.read()
-    except FileNotFoundError:
-        return None
-
-
-DEVICE_ID = get_device_id()
-
+from dev_assistant_client.utils import CERT_FILE, KEY_FILE, TOKEN_FILE, APP_URL, API_PATH, DEVICE_ID
+from dev_assistant_client.modules import file_management, version_control, shell_prompter
 
 def create_device_payload():
     return json.dumps({
@@ -44,23 +27,25 @@ def create_device_payload():
     }, indent=4)
 
 
+CONN = http.client.HTTPSConnection(
+    APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
+HEADERS = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+}
+
 async def connect():
     with open(TOKEN_FILE, "r") as f:
-        token = f.read()
+        token = f.readline()
 
-    headers = {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    }
+    HEADERS['Authorization'] = 'Bearer ' + token
 
     payload = create_device_payload()
 
     print("Connecting...")
 
-    conn = http.client.HTTPSConnection(APP_URL)
-    conn.request("POST", API_PATH + '/devices', body=payload, headers=headers)
-    response = conn.getresponse()
+    CONN.request("POST", API_PATH + '/devices', body=payload, headers=HEADERS)
+    response = CONN.getresponse()
 
     if response.status == 200:
         response_body = response.read().decode()
@@ -82,28 +67,40 @@ async def connect():
         else:
             print("Response: ", response.read().decode())
             print("Status code: ", response.status)
-    
+
+
 def send_response(data):
     print(Fore.LIGHTYELLOW_EX + "Received command: " +
           Style.RESET_ALL, data.get('id'))
 
+    # Extract the module, operation and arguments from the command data
+    module = data.get('module')
+    operation = data.get('operation')
+    args = data.get('args')
+
+    # Execute the appropriate function based on the module and operation
+    if module == 'file_management':
+        response_data = file_management.execute(operation, args)
+    elif module == 'version_control':
+        response_data = version_control.execute(operation, args)
+    elif module == 'shell_prompter':
+        response_data = shell_prompter.execute(operation, args)
+    else:
+        response_data = {'error': f'Unknown module: {module}'}
+
     with open(TOKEN_FILE, "r") as f:
         token = f.readline()
-    
-    headers = {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    }
-    
+
+    HEADERS['Authorization'] = 'Bearer ' + token
+
     payload = json.dumps({
-        'response': 'Done'
+        'response': response_data  # Send the actual response data
     })
-    
-    conn = http.client.HTTPSConnection(APP_URL)
-    conn.request("PUT", API_PATH + '/devices/' + DEVICE_ID + '/io/'+data.get('id'), body=payload, headers=headers)
-    response = conn.getresponse()
-    
+
+    CONN.request("PUT", API_PATH + '/devices/' + DEVICE_ID +
+                 '/io/'+data.get('id'), body=payload, headers=HEADERS)
+    response = CONN.getresponse()
+
     if response.status == 200:
         print(Fore.LIGHTGREEN_EX + "Response sent!" + Style.RESET_ALL)
     else:
@@ -111,40 +108,17 @@ def send_response(data):
 
 
 async def connect_to_ably():
-    client = ably.AblyRealtime(ABLY_KEY)
+    auth_url = 'https://' + APP_URL + API_PATH + '/devices/' + DEVICE_ID + '/ably-token-request'
+    realtime = ably.AblyRealtime(auth_url=auth_url)
+    
+    client = realtime
     privateChannel = client.channels.get('private:device.' + DEVICE_ID)
     print("Connected to Ably!", privateChannel.name)
 
-    async def listener(message):
+    def listener(message):
         send_response(message.data)
 
     await privateChannel.subscribe(listener)
 
-    # Add an infinite loop to keep the script running
     while True:
-        await asyncio.sleep(0.5)
-    
-
-def connect_to_pusher():
-    # Add a logging handler so we can see the raw communication data
-    root = logging.getLogger()
-    root.setLevel(logging.INFO)
-    ch = logging.StreamHandler(sys.stdout)
-    root.addHandler(ch)
-
-    global pusher
-
-    # We can't subscribe until we've connected, so we use a callback handler
-    # to subscribe when able
-    def connect_handler(data):
-        channel = pusher.subscribe('dev-assistant')
-        channel.bind('my-event', send_response)
-
-    pusher = Pusher(key=PUSHER_APP_KEY, secret=PUSHER_APP_SECRET,
-                    secure=True, log_level=logging.WARNING)
-    pusher.connection.bind('pusher:connection_established', connect_handler)
-    pusher.connect()
-
-    while True:
-        time.sleep(1)
-
+        await asyncio.sleep(1)

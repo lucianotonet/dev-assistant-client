@@ -1,18 +1,28 @@
 import os
+import http.client
+import json
 from dotenv import load_dotenv
+from colorama import Fore, Style
+
 load_dotenv()
 
 APP_URL = os.getenv('APP_URL').replace('https://', '').replace('/', '')
 API_PATH = '/api'
+
 TOKEN_FILE = os.path.expanduser("~/.dev_assistant_token")
-USER_DATA = os.path.expanduser("~/.dev_assistant_user")
+USER_DATA_FILE = os.path.expanduser("~/.dev_assistant_user")
+ABLY_TOKEN_FILE = os.path.expanduser("~/.dev_assistant_ably_token")
 
-ABLY_KEY = os.getenv('ABLY_KEY')
+# if is set in the env file, use it, otherwise use the default
+CERT_FILE = os.getenv('CERT_FILE') or None
+KEY_FILE = os.getenv('KEY_FILE') or None
 
-PUSHER_APP_ID = os.getenv('PUSHER_APP_ID')
-PUSHER_APP_KEY = os.getenv('PUSHER_APP_KEY')
-PUSHER_APP_SECRET = os.getenv('PUSHER_APP_SECRET')
-PUSHER_HOST = os.getenv('PUSHER_HOST')
-PUSHER_PORT = os.getenv('PUSHER_PORT') or 443
-PUSHER_SCHEME = os.getenv('PUSHER_SCHEME') or 'https'
-PUSHER_APP_CLUSTER = os.getenv('PUSHER_APP_CLUSTER') or 'sa1'
+def get_device_id():
+    try:
+        with open('.device_id', 'r') as f:
+            return f.readline()
+    except FileNotFoundError:
+        return None
+
+
+DEVICE_ID = get_device_id()

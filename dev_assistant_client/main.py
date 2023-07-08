@@ -1,4 +1,6 @@
+
 import asyncio
+import sys
 from pusherclient import Pusher
 import argparse
 import os
@@ -7,7 +9,7 @@ from dotenv import load_dotenv
 from colorama import Fore, Style
 from dev_assistant_client.auth import login, logout
 from dev_assistant_client.device import connect, connect_to_ably
-from dev_assistant_client.utils import APP_URL, TOKEN_FILE, PUSHER_APP_ID, PUSHER_APP_KEY, PUSHER_APP_SECRET, PUSHER_APP_CLUSTER
+from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE, ABLY_TOKEN_FILE
 from pusher import Pusher
 import pkg_resources
 
@@ -43,6 +45,8 @@ async def main(args=None):
     if 'func' in args:
         try:
             await args.func(args)
+        except KeyboardInterrupt:
+            print("Interrompido pelo usuário, finalizando...")
         except Exception as e:
             print(f"An error occurred: {e}")
     else:
@@ -51,9 +55,9 @@ async def main(args=None):
 
 async def start(args):
     # Check if the user is logged in, if not, prompt for login
-    if not os.path.exists(TOKEN_FILE):
+    if not os.path.exists(TOKEN_FILE) or not os.path.exists(USER_DATA_FILE):
         login(args)
-        await start(args)
+        await connect()
     else:
         try:
             await connect()
@@ -62,7 +66,11 @@ async def start(args):
 
 
 def run():
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Interrompido pelo usuário, finalizando...")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
