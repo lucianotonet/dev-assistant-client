@@ -8,7 +8,7 @@ import time
 from dotenv import load_dotenv
 from colorama import Fore, Style
 from dev_assistant_client.auth import login, logout
-from dev_assistant_client.device import connect, connect_to_ably
+from dev_assistant_client.device import connect
 from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE, ABLY_TOKEN_FILE
 from pusher import Pusher
 import pkg_resources
@@ -20,13 +20,12 @@ package_version = pkg_resources.get_distribution(
 print(Fore.LIGHTGREEN_EX +
       '''
     .-----.   Dev Assistant
-    | >_< |   ''' + Fore.YELLOW + 'v' + package_version + Fore.LIGHTGREEN_EX + ''' 
-    '-----'   ''' + Fore.YELLOW + 'https://' + (APP_URL or 'devassistant.tonet.dev') + Fore.LIGHTGREEN_EX + '''
+    | >_< |   ''' + Fore.LIGHTYELLOW_EX + 'v' + package_version + Fore.LIGHTGREEN_EX + ''' 
+    '-----'   ''' + Fore.LIGHTYELLOW_EX + 'https://' + (APP_URL or 'devassistant.tonet.dev') + Fore.LIGHTGREEN_EX + '''
 '''
       + Style.RESET_ALL)
 
 load_dotenv()
-
 
 async def main(args=None):
     # Parse command line arguments
@@ -46,7 +45,7 @@ async def main(args=None):
         try:
             await args.func(args)
         except KeyboardInterrupt:
-            print("Interrompido pelo usuário, finalizando...")
+            print("Bye!")
         except Exception as e:
             print(f"An error occurred: {e}")
     else:
@@ -62,14 +61,16 @@ async def start(args):
         try:
             await connect()
         except Exception as e:
-            print(f"Failed to start: {e}")
+            print(f"Error: {e}", file=sys.stderr)
+    while True:
+        time.sleep(1)
 
 
 def run():
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Interrompido pelo usuário, finalizando...")
+        print("Bye!")
         sys.exit(0)
 
 

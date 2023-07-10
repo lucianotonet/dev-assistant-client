@@ -4,14 +4,11 @@ import json
 import os
 import ably
 from colorama import Fore, Style
-from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE
+from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS
 
-HEADERS = {
-    'content-type': 'application/json',
-    'accept': 'application/json'
-}
+CONN = http.client.HTTPSConnection(
+    APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
 
-CONN = http.client.HTTPSConnection(APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
 
 def login(args):
     email = input("Enter your email: ")
@@ -47,8 +44,8 @@ def login(args):
             if 'name' in user:
                 with open(USER_DATA_FILE, "w") as f:
                     json.dump(user, f)
-                print(Fore.LIGHTGREEN_EX + "Hello, " +
-                      user['name'] + " 👋🏼!" + Style.RESET_ALL)
+                print(Style.RESET_ALL + "Hello, " + Fore.LIGHTCYAN_EX +
+                      user['name'] + Style.RESET_ALL + "!")
 
     else:
         print(Fore.RED + "Failed to log in!" + Style.RESET_ALL)
@@ -64,7 +61,8 @@ def logout(args):
     response = CONN.getresponse()
 
     if response.status == 200:
-        print("Logged out.")
+        print("You are now logged out")
+        print("Bye!")
     else:
         print("Failed to log out!")
 
