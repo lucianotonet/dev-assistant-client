@@ -7,7 +7,7 @@ import socket
 import uuid
 import re
 from colorama import Fore, Style
-from dev_assistant_client.utils import CERT_FILE, KEY_FILE, TOKEN_FILE, APP_URL, API_PATH, DEVICE_ID
+from dev_assistant_client.utils import CERT_FILE, DEVICE_ID_FILE, KEY_FILE, TOKEN_FILE, APP_URL, API_PATH, DEVICE_ID
 from dev_assistant_client.modules import file_management, version_control, shell_prompter
 from dev_assistant_client.io import ably_connect
 
@@ -52,7 +52,7 @@ async def connect():
         device_data = json.loads(response_body)
         print(Fore.LIGHTGREEN_EX + "Connected." + Style.RESET_ALL)
         print(Fore.LIGHTYELLOW_EX + "Device ID: " + device_data['id'] + Style.RESET_ALL)
-        with open('.device_id', 'w') as f:
+        with open(DEVICE_ID_FILE, 'w') as f:
             f.write(device_data['id'])
         # Connect to Ably
         await ably_connect()
@@ -60,8 +60,8 @@ async def connect():
         print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
         if response.status == 401:
             print("Error: ", response.read().decode())
-            print("Please do log in again." + Style.RESET_ALL)
-            os.remove(TOKEN_FILE)
+            print("Please do login again." + Style.RESET_ALL)
+            os.remove(TOKEN_FILE)            
         else:
             print("Response: ", response.read().decode())
             print("Status code: ", response.status)

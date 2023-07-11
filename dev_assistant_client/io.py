@@ -8,40 +8,52 @@ from dev_assistant_client.auth import CONN, HEADERS
 from dev_assistant_client.utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE
 from dev_assistant_client.modules import file_management, version_control, shell_prompter
 
-def send_response(data):
-    try:
-        print(Fore.LIGHTYELLOW_EX + "Request:\t" +
-              Style.RESET_ALL, data.get('request'))
 
-        # Extract the module, operation and arguments from the command data
-        module = data.get('module')
-        operation = data.get('operation')
-        args = data.get('args')
+def execute_request(instruction):
+    try:
+        module = instruction.get('module')
+        request = instruction.get('request')
+        
+        print(Fore.LIGHTYELLOW_EX + "\nInstruction:\t" +
+              Style.RESET_ALL, request)
+
+        # Extract the module, operation and arguments from the command request
+        print(Fore.LIGHTYELLOW_EX + "Module:\t" + Style.RESET_ALL, module)
+        operation = request.get('operation')
+        print(Fore.LIGHTYELLOW_EX + "Operation:\t" + Style.RESET_ALL, operation)
+        args = request.get('args')
+        print(Fore.LIGHTYELLOW_EX + "Args:\t" + Style.RESET_ALL, args)
 
         # Execute the appropriate function based on the module and operation
-        if module == 'file_management':
+        if module == 'files':
             response_data = file_management.execute(operation, args)
-        elif module == 'version_control':
+        elif module == 'git':
             response_data = version_control.execute(operation, args)
-        elif module == 'shell_prompter':
+        elif module == 'terminal':
             response_data = shell_prompter.execute(operation, args)
         else:
-            # Just for testing purposes
-            response_data = version_control.execute(
-                'status', {'directory': '.'}
-            )
+            response_data = "Invalid module or operation"
+    except Exception as e:
+        print(Fore.LIGHTRED_EX + "Error: \t" + Style.RESET_ALL, e)
+        print("Retrying...")
+        execute_request(instruction)
 
-        with open(TOKEN_FILE, "r") as f:
-            token = f.readline()
+    with open(TOKEN_FILE, "r") as f:
+        token = f.readline()
 
-        HEADERS['Authorization'] = 'Bearer ' + token
+    HEADERS['Authorization'] = 'Bearer ' + token
 
-        payload = json.dumps({
-            'response': response_data  # Send the actual response data
-        })
+    payload = json.dumps({
+        'response': response_data  # Send the actual response data
+    })
 
+    send_response(instruction, payload)
+
+
+def send_response(instruction, response):
+    try:
         CONN.request("PUT", API_PATH + '/devices/' + DEVICE_ID +
-                     '/io/'+data.get('id'), body=payload, headers=HEADERS)
+                     '/io/'+instruction.get('id'), body=response, headers=HEADERS)
         response = CONN.getresponse()
 
         if response.status == 200:
@@ -51,32 +63,38 @@ def send_response(data):
         else:
             print(Fore.LIGHTRED_EX + "Failed to send response!" + Style.RESET_ALL)
     except Exception as e:
-        print(Fore.LIGHTRED_EX + "Error sending response: " + Style.RESET_ALL, e)
-        return
+        print(Fore.LIGHTRED_EX + "Error on save: \t" + Style.RESET_ALL, e)
+        print("Retrying...")
+        send_response(instruction, response)
 
 
 async def ably_connect():
     auth_url = 'https://' + APP_URL + API_PATH + '/ably-auth'
-    # Faça uma solicitação HTTP para o seu endpoint Laravel para obter o TokenRequest
-    response = requests.get(auth_url)
-    token_request = response.json()
+    with open(TOKEN_FILE, "r") as f:
+        token = f.readline()
 
-    # Faça uma solicitação HTTP para o endpoint de token do Ably para obter um token usando o token_request
-    token_url = 'https://rest.ably.io/keys/' + \
-        token_request['keyName'] + '/requestToken'
-    response = requests.post(token_url, json=token_request)
-    token = response.json()['token']
+    try:
+        HEADERS['Authorization'] = 'Bearer ' + token
+        response = requests.post(auth_url, headers=HEADERS)
+        token_request = response.json()
+    except Exception as e:
+        print("Error getting token request: ", e)
+        return
 
-    # Inicialize o cliente AblyRealtime com o token
-    realtime = AblyRealtime(token=token)
-
-    # Inscreva-se em um canal
-    # publicChannel = realtime.channels.get('public:dev-assistant')
-    # await publicChannel.subscribe(check_message)
+    try:
+        token_url = 'https://rest.ably.io/keys/' + \
+            token_request['keyName'] + '/requestToken'
+        response = requests.post(token_url, json=token_request)
+        token = response.json()['token']
+        realtime = AblyRealtime(token=token)
+    except Exception as e:
+        print("Error connecting to Ably: ", e)
+        return
 
     # Inscreva-se em um canal privado
     privateChannel = realtime.channels.get('private:dev-assistant-'+DEVICE_ID)
     await privateChannel.subscribe(check_message)
+    print("Waiting for instructions...")
 
     while True:
         await asyncio.sleep(0.3)
@@ -84,7 +102,7 @@ async def ably_connect():
 
 async def check_message(message):
     try:
-        send_response(message.data)
+        execute_request(message.data)
     except:
         print("Error sending response" + Style.RESET_ALL, sys.exc_info()[0])
         return

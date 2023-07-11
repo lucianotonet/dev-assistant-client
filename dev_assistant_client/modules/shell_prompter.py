@@ -2,14 +2,14 @@
 import subprocess
 
 def execute(operation, args):
-    if operation == 'run_command':
-        return run_command(args.get('request'))
+    if operation == 'run':
+        return run_command(args)
     else:
         return {'error': f'Unknown operation: {operation}'}
 
-def run_command(request):
+def run_command(args):
     try:
-        command = request.get('command')
+        command = args.get('command')
         # Run the command and capture the output
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         return {'stdout': result.stdout, 'stderr': result.stderr}

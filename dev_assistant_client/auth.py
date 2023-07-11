@@ -48,8 +48,10 @@ def login(args):
                       user['name'] + Style.RESET_ALL + "!")
 
     else:
-        print(Fore.RED + "Failed to log in!" + Style.RESET_ALL)
-        print("Error: ", response.read().decode())
+        error = json.loads(response.read().decode())
+        print(Fore.LIGHTRED_EX + "Error: " +
+              response.read().decode() + Style.RESET_ALL, error.get('message'))
+        return
 
 
 def logout(args):

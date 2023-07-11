@@ -6,8 +6,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-.device_id
-
 # C extensions
 *.so
 

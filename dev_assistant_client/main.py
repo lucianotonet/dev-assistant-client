@@ -53,15 +53,12 @@ async def main(args=None):
 
 
 async def start(args):
-    # Check if the user is logged in, if not, prompt for login
-    if not os.path.exists(TOKEN_FILE) or not os.path.exists(USER_DATA_FILE):
-        login(args)
+    try:
+        if not os.path.exists(TOKEN_FILE) or not os.path.exists(USER_DATA_FILE):
+            login(args)
         await connect()
-    else:
-        try:
-            await connect()
-        except Exception as e:
-            print(f"Error: {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
     while True:
         time.sleep(1)
 
@@ -70,7 +67,6 @@ def run():
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Bye!")
         sys.exit(0)
 
 
