@@ -1,3 +1,4 @@
+import json
 import os
 from dotenv import load_dotenv
 
@@ -29,3 +30,18 @@ HEADERS = {
     'Content-Type': 'application/json',
     'User-Agent': 'DevAssistantClient/1.0'
 }
+
+
+def flatten_dict(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+def print_json(request):
+    print(json.dumps(request, indent=4))

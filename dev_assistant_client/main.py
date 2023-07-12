@@ -1,5 +1,6 @@
 
 import asyncio
+import datetime
 import sys
 from pusherclient import Pusher
 import argparse
@@ -27,6 +28,7 @@ print(Fore.LIGHTGREEN_EX +
 
 load_dotenv()
 
+
 async def main(args=None):
     # Parse command line arguments
     parser = argparse.ArgumentParser(prog='dev-assistant')
@@ -45,9 +47,11 @@ async def main(args=None):
         try:
             await args.func(args)
         except KeyboardInterrupt:
-            print("Bye!")
+            now = datetime.datetime.now()
+            print(str(now), "Closing app", "See you soon!", sep="\t", end="\n")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            now = datetime.datetime.now()
+            print(Fore.LIGHTRED_EX + str(now), "Error:", Fore.LIGHTRED_EX + e + Style.RESET_ALL, sep="\t", end="\n")
     else:
         await start(args)
 
@@ -58,7 +62,9 @@ async def start(args):
             login(args)
         await connect()
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        now = datetime.datetime.now()
+        print(Fore.LIGHTRED_EX + str(now), "Error:", Fore.LIGHTRED_EX +
+              e + Style.RESET_ALL, sep="\t", end="\n")
     while True:
         time.sleep(1)
 

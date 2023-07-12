@@ -1,8 +1,8 @@
+import datetime
 import getpass
 import http.client
 import json
 import os
-import ably
 from colorama import Fore, Style
 from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS
 
@@ -26,7 +26,9 @@ def login(args):
         token = response.read().decode()
         with open(TOKEN_FILE, "w") as f:
             f.write(token)
-        print(Fore.LIGHTGREEN_EX + "Logged in." + Style.RESET_ALL)
+        now = datetime.datetime.now()
+        print(Fore.LIGHTGREEN_EX + str(now), "Logged in." +
+              Style.RESET_ALL, sep="\t", end="\n")
 
         headers = {
             'authorization': 'Bearer ' + token,
@@ -44,13 +46,14 @@ def login(args):
             if 'name' in user:
                 with open(USER_DATA_FILE, "w") as f:
                     json.dump(user, f)
-                print(Style.RESET_ALL + "Hello, " + Fore.LIGHTCYAN_EX +
-                      user['name'] + Style.RESET_ALL + "!")
+                print(Fore.LIGHTGREEN_EX + str(now), "Hello, " + Fore.LIGHTCYAN_EX +
+                      user['name'] + Style.RESET_ALL + "!", sep="\t", end="\n")
 
     else:
         error = json.loads(response.read().decode())
-        print(Fore.LIGHTRED_EX + "Error: " +
-              response.read().decode() + Style.RESET_ALL, error.get('message'))
+        now = datetime.datetime.now()
+        print(Fore.LIGHTRED_EX + str(now), "Error:", Fore.LIGHTRED_EX +
+              response.read().decode() + Style.RESET_ALL, error.get('message'), sep="\t", end="\n")
         return
 
 
@@ -63,10 +66,12 @@ def logout(args):
     response = CONN.getresponse()
 
     if response.status == 200:
-        print("You are now logged out")
+        now = datetime.datetime.now()
+        print(str(now), "You are now logged out", sep="\t", end="\n")
         print("Bye!")
     else:
-        print("Failed to log out!")
+        now = datetime.datetime.now()
+        print(str(now), "Failed to log out!", sep="\t", end="\n")
 
     os.remove(USER_DATA_FILE)
     os.remove(TOKEN_FILE)
