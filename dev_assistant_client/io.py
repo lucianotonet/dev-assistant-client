@@ -1,7 +1,9 @@
 import asyncio
 import json
 import sys
+import logging
 from colorama import Fore, Style
+from tabulate import tabulate
 import requests
 from ably import AblyRealtime
 from dev_assistant_client.auth import CONN, HEADERS
@@ -9,22 +11,34 @@ from dev_assistant_client.utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE
 from dev_assistant_client.modules import file_management, version_control, shell_prompter
 
 
+logging.basicConfig(level=logging.INFO)
+
+
+def flatten_dict(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+def print_json(request):
+    logging.info(json.dumps(request, indent=4))
+
+
 def execute_request(instruction):
     try:
         module = instruction.get('module')
         request = instruction.get('request')
-        
-        print(Fore.LIGHTYELLOW_EX + "\nInstruction:\t" +
-              Style.RESET_ALL, request)
 
-        # Extract the module, operation and arguments from the command request
-        print(Fore.LIGHTYELLOW_EX + "Module:\t" + Style.RESET_ALL, module)
+        print_json(request)
+
         operation = request.get('operation')
-        print(Fore.LIGHTYELLOW_EX + "Operation:\t" + Style.RESET_ALL, operation)
         args = request.get('args')
-        print(Fore.LIGHTYELLOW_EX + "Args:\t" + Style.RESET_ALL, args)
 
-        # Execute the appropriate function based on the module and operation
         if module == 'files':
             response_data = file_management.execute(operation, args)
         elif module == 'git':
@@ -34,9 +48,9 @@ def execute_request(instruction):
         else:
             response_data = "Invalid module or operation"
     except Exception as e:
-        print(Fore.LIGHTRED_EX + "Error: \t" + Style.RESET_ALL, e)
-        print("Retrying...")
-        execute_request(instruction)
+        logging.error("Error: \t", e)
+        logging.info("Retrying...")
+        return
 
     with open(TOKEN_FILE, "r") as f:
         token = f.readline()
@@ -44,9 +58,10 @@ def execute_request(instruction):
     HEADERS['Authorization'] = 'Bearer ' + token
 
     payload = json.dumps({
-        'response': response_data  # Send the actual response data
+        'response': response_data
     })
 
+    logging.info("Task done!\t Sending response...")
     send_response(instruction, payload)
 
 
@@ -58,14 +73,15 @@ def send_response(instruction, response):
 
         if response.status == 200:
             output = json.loads(response.read().decode())
-            print(Fore.LIGHTGREEN_EX + "Response:\t" +
-                  Style.RESET_ALL, output.get('response'))
+            response = output.get('response')
+            logging.info("Sent:\n")
+            print_json(response)
         else:
-            print(Fore.LIGHTRED_EX + "Failed to send response!" + Style.RESET_ALL)
+            logging.error("Failed to send response!")
     except Exception as e:
-        print(Fore.LIGHTRED_EX + "Error on save: \t" + Style.RESET_ALL, e)
-        print("Retrying...")
-        send_response(instruction, response)
+        logging.error("Error:\t\t", e)
+        logging.info("Retrying...")
+        return
 
 
 async def ably_connect():
@@ -78,7 +94,7 @@ async def ably_connect():
         response = requests.post(auth_url, headers=HEADERS)
         token_request = response.json()
     except Exception as e:
-        print("Error getting token request: ", e)
+        logging.error("Error getting token request: ", e)
         return
 
     try:
@@ -88,13 +104,12 @@ async def ably_connect():
         token = response.json()['token']
         realtime = AblyRealtime(token=token)
     except Exception as e:
-        print("Error connecting to Ably: ", e)
+        logging.error("Error connecting to Ably: ", e)
         return
 
-    # Inscreva-se em um canal privado
     privateChannel = realtime.channels.get('private:dev-assistant-'+DEVICE_ID)
     await privateChannel.subscribe(check_message)
-    print("Waiting for instructions...")
+    logging.info("Waiting for instructions...")
 
     while True:
         await asyncio.sleep(0.3)
@@ -104,7 +119,7 @@ async def check_message(message):
     try:
         execute_request(message.data)
     except:
-        print("Error sending response" + Style.RESET_ALL, sys.exc_info()[0])
+        logging.error("Error sending response", sys.exc_info()[0])
         return
 
 
@@ -117,4 +132,4 @@ def connect_to_pusher():
                             API_PATH + '/pusher-auth', headers=HEADERS)
     response.raise_for_status()
     auth_info = response.json()
-    print("Auth info: ", auth_info)
+    logging.info("Auth info: ", auth_info)
