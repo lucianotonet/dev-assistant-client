@@ -1,5 +1,8 @@
+from datetime import datetime
 import json
 import os
+import sys
+from colorama import Fore, Style
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -45,3 +48,11 @@ def flatten_dict(d, parent_key='', sep='.'):
 
 def print_json(request):
     print(json.dumps(request, indent=4))
+
+def now ():
+    """
+    The function "now" returns the current date and time as a string.
+    :return: The current date and time as a string.
+    """
+    now = datetime.now()
+    return str(now)

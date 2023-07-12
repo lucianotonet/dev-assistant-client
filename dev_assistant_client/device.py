@@ -8,7 +8,7 @@ import socket
 import uuid
 import re
 from colorama import Fore, Style
-from dev_assistant_client.utils import CERT_FILE, DEVICE_ID_FILE, KEY_FILE, TOKEN_FILE, APP_URL, API_PATH, DEVICE_ID
+from dev_assistant_client.utils import CERT_FILE, DEVICE_ID_FILE, KEY_FILE, TOKEN_FILE, APP_URL, API_PATH, DEVICE_ID, now
 from dev_assistant_client.modules import file_management, version_control, shell_prompter
 from dev_assistant_client.io import ably_connect
 
@@ -44,9 +44,7 @@ async def connect():
 
     payload = create_device_payload()
 
-    now = datetime.datetime.now()
-    print(str(now), "Connecting device..." +
-          Style.RESET_ALL, sep="\t", end="\n")
+    print(now(), "Connecting device...", sep="\t")
 
     CONN.request("POST", API_PATH + '/devices', body=payload, headers=HEADERS)
     response = CONN.getresponse()
@@ -54,26 +52,19 @@ async def connect():
     if response.status == 200:
         response_body = response.read().decode()
         device_data = json.loads(response_body)
-        now = datetime.datetime.now()
-        print(str(now), Fore.LIGHTGREEN_EX + "Connected." +
-              Style.RESET_ALL, sep="\t", end="\n")
-        print(str(now), Fore.LIGHTYELLOW_EX + "Device ID: " +
-              device_data['id'] + Style.RESET_ALL, sep="\t", end="\n")
+        print(now(), "Connected.", sep="\t")
+        print(now(), "Device ID: ", Fore.LIGHTYELLOW_EX +
+                     device_data['id'] + Style.RESET_ALL, sep="\t")
         with open(DEVICE_ID_FILE, 'w') as f:
             f.write(device_data['id'])
         # Connect to Ably
         await ably_connect()
     else:
-        now = datetime.datetime.now()
-        print(str(now), Fore.LIGHTRED_EX + "Failed to connect!" +
-              Style.RESET_ALL, sep="\t", end="\n")
+        print(now(), "Failed to connect!", sep="\t")
         if response.status == 401:
-            print(str(now), "Error: ", response.read().decode(), sep="\t", end="\n")
-            print(str(now), "Please do login again." +
-                  Style.RESET_ALL, sep="\t", end="\n")
+            print(now(), "Error: ", response.read().decode(), sep="\t")
+            print(now(), "Please do login again.", sep="\t")
             os.remove(TOKEN_FILE)
         else:
-            print(str(now), "Response: ",
-                  response.read().decode(), sep="\t", end="\n")
-            print(str(now), "Status code: ",
-                  response.status, sep="\t", end="\n")
+            print(now(), "Response: ", response.read().decode(), sep="\t")
+            print(now(), "Status code: ", response.status, sep="\t")

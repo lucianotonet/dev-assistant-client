@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from colorama import Fore, Style
 from dev_assistant_client.auth import login, logout
 from dev_assistant_client.device import connect
-from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE, ABLY_TOKEN_FILE
+from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE, ABLY_TOKEN_FILE, now
 from pusher import Pusher
 import pkg_resources
 
@@ -23,8 +23,7 @@ print(Fore.LIGHTGREEN_EX +
     .-----.   Dev Assistant
     | >_< |   ''' + Fore.LIGHTYELLOW_EX + 'v' + package_version + Fore.LIGHTGREEN_EX + ''' 
     '-----'   ''' + Fore.LIGHTYELLOW_EX + 'https://' + (APP_URL or 'devassistant.tonet.dev') + Fore.LIGHTGREEN_EX + '''
-'''
-      + Style.RESET_ALL)
+''' + Style.RESET_ALL)
 
 load_dotenv()
 
@@ -47,11 +46,9 @@ async def main(args=None):
         try:
             await args.func(args)
         except KeyboardInterrupt:
-            now = datetime.datetime.now()
-            print(str(now), "Closing app", "See you soon!", sep="\t", end="\n")
+            print("Closing app", "See you soon!")
         except Exception as e:
-            now = datetime.datetime.now()
-            print(Fore.LIGHTRED_EX + str(now), "Error:", Fore.LIGHTRED_EX + e + Style.RESET_ALL, sep="\t", end="\n")
+            print("Error:", e)
     else:
         await start(args)
 
@@ -62,9 +59,7 @@ async def start(args):
             login(args)
         await connect()
     except Exception as e:
-        now = datetime.datetime.now()
-        print(Fore.LIGHTRED_EX + str(now), "Error:", Fore.LIGHTRED_EX +
-              e + Style.RESET_ALL, sep="\t", end="\n")
+        print("Error:", e)
     while True:
         time.sleep(1)
 

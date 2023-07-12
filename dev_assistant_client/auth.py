@@ -4,7 +4,7 @@ import http.client
 import json
 import os
 from colorama import Fore, Style
-from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS
+from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS, now
 
 CONN = http.client.HTTPSConnection(
     APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
@@ -26,9 +26,8 @@ def login(args):
         token = response.read().decode()
         with open(TOKEN_FILE, "w") as f:
             f.write(token)
-        now = datetime.datetime.now()
-        print(Fore.LIGHTGREEN_EX + str(now), "Logged in." +
-              Style.RESET_ALL, sep="\t", end="\n")
+        
+        print(now(), "Logged in.", sep="\t", end="\n")
 
         headers = {
             'authorization': 'Bearer ' + token,
@@ -46,16 +45,14 @@ def login(args):
             if 'name' in user:
                 with open(USER_DATA_FILE, "w") as f:
                     json.dump(user, f)
-                print(Fore.LIGHTGREEN_EX + str(now), "Hello, " + Fore.LIGHTCYAN_EX +
+                print(now(), "Hello, " + Fore.LIGHTCYAN_EX +
                       user['name'] + Style.RESET_ALL + "!", sep="\t", end="\n")
 
     else:
         error = json.loads(response.read().decode())
-        now = datetime.datetime.now()
-        print(Fore.LIGHTRED_EX + str(now), "Error:", Fore.LIGHTRED_EX +
-              response.read().decode() + Style.RESET_ALL, error.get('message'), sep="\t", end="\n")
+        print(now(), Fore.LIGHTRED_EX + "Error:", Style.RESET_ALL +
+              response.read().decode(), error.get('message'), sep="\t", end="\n")
         return
-
 
 def logout(args):
     with open(TOKEN_FILE, "r") as f:
@@ -66,12 +63,10 @@ def logout(args):
     response = CONN.getresponse()
 
     if response.status == 200:
-        now = datetime.datetime.now()
-        print(str(now), "You are now logged out", sep="\t", end="\n")
+        print(now(), "You are now logged out", sep="\t", end="\n")
         print("Bye!")
     else:
-        now = datetime.datetime.now()
-        print(str(now), "Failed to log out!", sep="\t", end="\n")
+        print(now(), "Failed to log out!", sep="\t", end="\n")
 
     os.remove(USER_DATA_FILE)
     os.remove(TOKEN_FILE)
