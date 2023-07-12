@@ -78,5 +78,3 @@ A big thank you to all contributors and users for your support! We couldn't do i
 - [Luciano T.](https://github.com/lucianotonet)
 - [ChatGPT](https://chat.openai.com/)
 - [GitHub Copilot](https://copilot.github.com/)
-
----
