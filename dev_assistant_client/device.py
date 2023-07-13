@@ -1,4 +1,3 @@
-import datetime
 import os
 import getpass
 import http.client
@@ -9,7 +8,6 @@ import uuid
 import re
 from colorama import Fore, Style
 from dev_assistant_client.utils import CERT_FILE, DEVICE_ID_FILE, KEY_FILE, TOKEN_FILE, APP_URL, API_PATH, DEVICE_ID, now
-from dev_assistant_client.modules import files, version_control, terminal
 from dev_assistant_client.io import ably_connect
 
 
