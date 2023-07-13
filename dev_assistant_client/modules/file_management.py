@@ -16,7 +16,7 @@ def execute(operation, args):
 
 def create_file(path, content=None):
     try:
-        with open(path, 'w') as file:
+        with open(path, 'w', encoding='utf-8') as file:
             if content:
                 file.write(content)
         return {"message": f"File created at {path}"}
@@ -33,7 +33,7 @@ def read_file(path):
 
 def update_file(path, content, mode='a'):
     try:
-        with open(path, mode) as file:
+        with open(path, mode, encoding='utf-8') as file:
             file.write(content)
         return {"message": f"File updated at {path}"}
     except Exception as e:
