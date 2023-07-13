@@ -60,7 +60,7 @@ NoneType: None
 
 Em PluginController linha 20 nós informamos os argumentos aceitos mas não temos como informar o tipo de cada argumento, então o usuário pode passar qualquer coisa.
 No exemplo abaixo o usuário deve iformar mode como "w" ou "a" mas ele pode informar qualquer coisa. Precisamos de uma forma de definir os argumetnos e seus tipos para que sejam informados no openapi schema.
-Vide D:\www\dev-assistant-server\app\Http\Controllers\PluginController.php e também D:\www\dev-assistant-client\dev_assistant_client\modules\file_management.py
+Vide 'dev-assistant-server\app\Http\Controllers\PluginController.php' e também 'dev-assistant-client\dev_assistant_client\modules\file_management.py'
 
 REQUEST TO DEV ASSISTANT
 {
@@ -75,3 +75,7 @@ RESPONSE FROM DEV ASSISTANT
 {
   "error": "invalid mode: 'overwrite'"
 }
+
+# Issue 5
+
+Necessário implementar um método para criar diretórios em 'dev-assistant-client\dev_assistant_client\modules\file_management.py'

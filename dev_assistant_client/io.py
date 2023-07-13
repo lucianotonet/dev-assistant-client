@@ -10,10 +10,9 @@ import requests
 from ably import AblyRealtime
 from dev_assistant_client.auth import CONN, HEADERS
 from dev_assistant_client.utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE, now, print_json
-from dev_assistant_client.modules import file_management, version_control, shell_prompter
+from dev_assistant_client.modules import files, git, terminal
 from time import sleep
 
-logging.basicConfig(level=logging.ERROR)
 
 MAX_RETRIES = 5  # Define a maximum number of retries
 
@@ -31,11 +30,11 @@ def execute_request(instruction):
             args = request.get('args')
 
             if module == 'files':
-                response_data = file_management.execute(operation, args)
+                response_data = files.execute(operation, args)
             elif module == 'git':
-                response_data = version_control.execute(operation, args)
+                response_data = git.execute(operation, args)
             elif module == 'terminal':
-                response_data = shell_prompter.execute(operation, args)
+                response_data = terminal.execute(operation, args)
             else:
                 response_data = "Invalid module or operation"
             break
@@ -165,3 +164,14 @@ def check_message(message):
     except Exception as e:
         print(now(), "Error", e, sep="\t")
         return
+
+
+# get_module_instructions
+def get_module_instructions(module):
+    # dicionário instructions em io.py que mapeia os nomes dos módulos para suas respectivas funções get_instructions. Quando uma instrução é recebida, a função get_module_instructions é chamada com o nome do módulo como argumento, e ela retorna as instruções para esse módulo.
+    instructions = {
+        'files': files.get_instructions,
+        'git': git.get_instructions,
+        'terminal': terminal.get_instructions,
+    }
+    return instructions.get(module)()

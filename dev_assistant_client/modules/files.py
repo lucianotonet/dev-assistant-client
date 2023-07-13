@@ -54,4 +54,12 @@ def list_directory(path):
         files = os.listdir(path)
         return {"files": files}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e)}# Instructions for the File Management module
+
+def get_instructions():
+    return """
+    1. Always check if the file or directory exists before performing operations.
+    2. Handle file and directory paths carefully to avoid errors.
+    3. Always close files after you're done with them to free up system resources.
+    4. Use appropriate modes ('r', 'w', 'a', etc.) when opening files.
+    """
