@@ -68,12 +68,3 @@ def git_status(directory):
         return {"error": str(e)}
     except Exception as e:
         return {"error": str(e)}    
-# Instructions for the Version Control module
-
-def get_instructions():
-    return """
-    1. Always validate the repository path before performing operations.
-    2. Handle git commands and their outputs carefully to avoid errors.
-    3. Always close any resources used during command execution.
-    4. Use appropriate git commands based on the requirements.
-    """

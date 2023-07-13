@@ -1,0 +1,53 @@
+import os
+import shutil
+import unittest
+from git import Repo
+from dev_assistant_client.modules.git import execute
+
+class TestGit(unittest.TestCase):
+    def setUp(self):
+        self.test_dir = os.path.join(os.getcwd(), 'test_repo')
+        os.mkdir(self.test_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
+
+    def test_git_init(self):
+        result = execute('init', {'directory': self.test_dir})
+        self.assertEqual(result['message'], f"Repo init in {self.test_dir}")
+        self.assertTrue(os.path.exists(os.path.join(self.test_dir, '.git')))
+
+    def test_git_add(self):
+        repo = Repo.init(self.test_dir)
+        with open(os.path.join(self.test_dir, 'test.txt'), 'w') as f:
+            f.write('test')
+        result = execute('add', {'directory': self.test_dir})
+        self.assertEqual(result['message'], f"Repo add in {self.test_dir}")
+        self.assertIn('test.txt', repo.git.status())
+
+    def test_git_commit(self):
+        repo = Repo.init(self.test_dir)
+        with open(os.path.join(self.test_dir, 'test.txt'), 'w') as f:
+            f.write('test')
+        repo.git.add('.')
+        result = execute('commit', {'message': 'test commit', 'directory': self.test_dir})
+        self.assertEqual(result['message'], f"Repo commit in {self.test_dir}")
+        self.assertIn('test commit', repo.git.log())
+
+    def test_git_push(self):
+        repo = Repo.init(self.test_dir)
+        with open(os.path.join(self.test_dir, 'test.txt'), 'w') as f:
+            f.write('test')
+        repo.git.add('.')
+        repo.git.commit('-m', 'test commit')
+        result = execute('push', {'remote': 'origin', 'branch': 'master', 'directory': self.test_dir})
+        self.assertEqual(result['message'], f"Repo push in {self.test_dir}")
+
+    def test_git_status(self):
+        repo = Repo.init(self.test_dir)
+        with open(os.path.join(self.test_dir, 'test.txt'), 'w') as f:
+            f.write('test')
+        repo.git.add('.')
+        result = execute('status', {'directory': self.test_dir})
+        self.assertEqual(result['message'], f"Repo status in {self.test_dir}")
+        self.assertIn('test.txt', result['status'])

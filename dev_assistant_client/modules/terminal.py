@@ -36,11 +36,3 @@ def run_command(args):
         return {'stdout': result.stdout, 'stderr': result.stderr}
     except Exception as e:
         return {"error": str(e)}# Instructions for the Shell Prompter module
-
-def get_instructions():
-    return """
-    1. Always validate the command before executing it.
-    2. Handle command outputs carefully to avoid errors.
-    3. Always close any resources used during command execution.
-    4. Use appropriate methods for command execution based on the requirements.
-    """

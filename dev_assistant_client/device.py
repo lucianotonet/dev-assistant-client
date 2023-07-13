@@ -42,7 +42,7 @@ async def connect():
 
     payload = create_device_payload()
 
-    print(now(), "Connecting device...", sep="\t")
+    print(now(), "Connecting...", sep="\t")
 
     CONN.request("POST", API_PATH + '/devices', body=payload, headers=HEADERS)
     response = CONN.getresponse()
@@ -50,8 +50,7 @@ async def connect():
     if response.status == 200:
         response_body = response.read().decode()
         device_data = json.loads(response_body)
-        print(now(), "Connected.", sep="\t")
-        print(now(), "Device ID: ", Fore.LIGHTYELLOW_EX +
+        print(now(), "Connected.",  "Device ID " + Fore.LIGHTYELLOW_EX +
                      device_data['id'] + Style.RESET_ALL, sep="\t")
         with open(DEVICE_ID_FILE, 'w') as f:
             f.write(device_data['id'])

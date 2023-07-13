@@ -117,6 +117,7 @@ def send_response(instruction, response):
 
 async def ably_connect():
     """Connects to the Ably server and subscribes to the private channel"""
+    print(now(), "Initiating WebSocket connection...", sep="\t")
     auth_url = 'https://' + APP_URL + API_PATH + '/ably-auth'
     with open(TOKEN_FILE, "r") as f:
         token = f.readline()
@@ -135,9 +136,9 @@ async def ably_connect():
         response = requests.post(token_url, json=token_request)
         token = response.json()['token']
         realtime = AblyRealtime(token=token)
-        print(now(), "Connected to websocket server", sep="\t")
+        print(now(), "WebSocket connection established", sep="\t")
     except Exception as e:
-        print(now(), "Error", e, sep="\t")
+        print(now(), "Websocket error:", Fore.LIGHTYELLOW_EX + e + Style.RESET_ALL, sep="\t")
         return
 
     privateChannel = realtime.channels.get('private:dev-assistant-'+DEVICE_ID)
@@ -165,13 +166,3 @@ def check_message(message):
         print(now(), "Error", e, sep="\t")
         return
 
-
-# get_module_instructions
-def get_module_instructions(module):
-    # dicionário instructions em io.py que mapeia os nomes dos módulos para suas respectivas funções get_instructions. Quando uma instrução é recebida, a função get_module_instructions é chamada com o nome do módulo como argumento, e ela retorna as instruções para esse módulo.
-    instructions = {
-        'files': files.get_instructions,
-        'git': git.get_instructions,
-        'terminal': terminal.get_instructions,
-    }
-    return instructions.get(module)()

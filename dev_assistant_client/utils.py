@@ -51,9 +51,6 @@ def print_json(request):
     print(json.dumps(request, indent=4))
 
 def now ():
-    """
-    The function "now" returns the current date and time as a string.
-    :return: The current date and time as a string.
-    """
+    # return just the date and time in a string format
     now = datetime.now()
-    return str(now)
+    return Fore.WHITE + now.strftime("%d/%m/%Y %H:%M:%S") + Style.RESET_ALL

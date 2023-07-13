@@ -60,7 +60,7 @@ NoneType: None
 
 Em PluginController linha 20 nós informamos os argumentos aceitos mas não temos como informar o tipo de cada argumento, então o usuário pode passar qualquer coisa.
 No exemplo abaixo o usuário deve iformar mode como "w" ou "a" mas ele pode informar qualquer coisa. Precisamos de uma forma de definir os argumetnos e seus tipos para que sejam informados no openapi schema.
-Vide 'dev-assistant-server\app\Http\Controllers\PluginController.php' e também 'dev-assistant-client\dev_assistant_client\modules\file_management.py'
+Vide 'dev-assistant-server\app\Http\Controllers\PluginController.php' e também 'dev-assistant-client\dev_assistant_client\modules\files.py'
 
 REQUEST TO DEV ASSISTANT
 {
@@ -78,4 +78,8 @@ RESPONSE FROM DEV ASSISTANT
 
 # Issue 5
 
-Necessário implementar um método para criar diretórios em 'dev-assistant-client\dev_assistant_client\modules\file_management.py'
+Necessário implementar um método para criar diretórios em 'dev-assistant-client\dev_assistant_client\modules\files.py'
+
+# Issue 6 
+
+Precisamos implementar o auto deploy do pacote do Dev Assistant Client para o PyPi via Github actions. Atualmente o pacote é gerado e publicado manualmente.
