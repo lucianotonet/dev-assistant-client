@@ -18,10 +18,10 @@ RESPONSE FROM DEV ASSISTANT
   "error": "invalid mode: 'overwrite'"
 }
 
-# Issue 5
+Basic plan
 
-Necessário implementar um método para criar diretórios em 'dev-assistant-client\dev_assistant_client\modules\files.py'
+When trying to use files module, we get for example "invalid mode: 'update'".
+We need to validate commands but just 'r', 'w', 'a' are the only valid modes today.
 
-# Issue 6
-
-Precisamos implementar o auto deploy do pacote do Dev Assistant Client para o PyPi via Github actions. Atualmente o pacote é gerado e publicado manualmente.
+- Fix validation on commands at files module
+- Add tests for files module

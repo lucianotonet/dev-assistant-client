@@ -1,4 +1,3 @@
-
 import os
 from git import Repo, GitCommandError
 
@@ -13,6 +12,8 @@ def execute(operation, args):
         return git_push(args.get('remote'), args.get('branch'), args.get('directory'))
     elif operation == 'status':
         return git_status(args.get('directory'))
+    elif operation == 'diff':
+        return git_diff(args.get('file_path'), args.get('directory'))
     else:
         return {'error': f'Unknown operation: {operation}'}
 
@@ -67,4 +68,17 @@ def git_status(directory):
     except GitCommandError as e:
         return {"error": str(e)}
     except Exception as e:
-        return {"error": str(e)}    
+        return {"error": str(e)}
+
+def git_diff(file_path, directory):
+    try:
+        repo_path = directory or os.getcwd()
+        repo = Repo(repo_path)
+        hcommit = repo.head.commit
+        diff = hcommit.diff(None, create_patch=True)
+        diff_str = ''.join(diff)
+        return {"message": f"Git diff for {file_path} in {repo_path}", "diff": diff_str}
+    except GitCommandError as e:
+        return {"error": str(e)}
+    except Exception as e:
+        return {"error": str(e)}

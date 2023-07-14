@@ -44,3 +44,19 @@ class TestGit(unittest.TestCase):
         result = execute('status', {'directory': self.test_dir})
         self.assertEqual(result['message'], f"Repo status in {self.test_dir}")
         self.assertIn('test.txt', result['status'])
+
+    def test_git_diff(self):
+        repo = Repo.init(self.test_dir)
+        file_path = os.path.join(self.test_dir, 'test.txt')
+        with open(file_path, 'w') as f:
+            f.write('test')
+        repo.git.add('.')
+        repo.git.commit('-m', 'Initial commit')
+        with open(file_path, 'a') as f:
+            f.write('\nMore test content')
+        repo.git.add('.')
+        result = execute(
+            'diff', {'file_path': 'test.txt', 'directory': self.test_dir})
+        self.assertEqual(result['message'],
+                        f"Git diff for test.txt in {self.test_dir}")
+        self.assertIn('More test content', result['diff'])
