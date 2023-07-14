@@ -1,4 +1,5 @@
 import os
+import subprocess
 from git import Repo, GitCommandError
 
 def execute(operation, args):
@@ -74,10 +75,7 @@ def git_diff(file_path, directory):
     try:
         repo_path = directory or os.getcwd()
         repo = Repo(repo_path)
-        hcommit = repo.head.commit
-        diff = hcommit.diff(None, create_patch=True)
-        diff_str = ''.join(diff)
-        return {"message": f"Git diff for {file_path} in {repo_path}", "diff": diff_str}
+        return {"message": f"Git diff for {file_path} in {repo_path}", "diff": repo.git.diff(file_path)}
     except GitCommandError as e:
         return {"error": str(e)}
     except Exception as e:
