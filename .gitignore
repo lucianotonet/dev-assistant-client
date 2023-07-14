@@ -5,6 +5,8 @@ build/lib/dev_assistant_client
 __pycache__/
 *.py[cod]
 *$py.class
+test_repo
+tests/test_repo
 
 # C extensions
 *.so

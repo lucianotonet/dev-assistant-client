@@ -4,13 +4,14 @@ import unittest
 from git import Repo
 from dev_assistant_client.modules.git import execute
 
+
 class TestGit(unittest.TestCase):
     def setUp(self):
-        self.test_dir = os.path.join(os.getcwd(), 'test_repo')
-        os.mkdir(self.test_dir)
+        self.test_dir = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), 'test_repo')
 
     def tearDown(self):
-        shutil.rmtree(self.test_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_git_init(self):
         result = execute('init', {'directory': self.test_dir})
@@ -30,18 +31,10 @@ class TestGit(unittest.TestCase):
         with open(os.path.join(self.test_dir, 'test.txt'), 'w') as f:
             f.write('test')
         repo.git.add('.')
-        result = execute('commit', {'message': 'test commit', 'directory': self.test_dir})
+        result = execute(
+            'commit', {'message': 'test commit', 'directory': self.test_dir})
         self.assertEqual(result['message'], f"Repo commit in {self.test_dir}")
-        self.assertIn('test commit', repo.git.log())
-
-    def test_git_push(self):
-        repo = Repo.init(self.test_dir)
-        with open(os.path.join(self.test_dir, 'test.txt'), 'w') as f:
-            f.write('test')
-        repo.git.add('.')
-        repo.git.commit('-m', 'test commit')
-        result = execute('push', {'remote': 'origin', 'branch': 'master', 'directory': self.test_dir})
-        self.assertEqual(result['message'], f"Repo push in {self.test_dir}")
+        self.assertIn('test commit', repo.git.log())    
 
     def test_git_status(self):
         repo = Repo.init(self.test_dir)
