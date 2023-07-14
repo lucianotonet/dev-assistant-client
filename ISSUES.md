@@ -1,1 +1,1 @@
-Moved to ./issues/issue*.md
+moved to ./issues/issue*.md
