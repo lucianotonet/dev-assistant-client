@@ -20,6 +20,9 @@ jobs:
     - name: Run tests
       run: |
         python setup.py test
+    - name: Update version
+      run: |
+        python version_bump.py
     - name: Build and publish
       env:
         TWINE_USERNAME: __token__
