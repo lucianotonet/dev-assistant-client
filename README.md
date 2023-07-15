@@ -12,11 +12,11 @@ Dev Assistant Client (this repo) is a Python package that is basically the core 
 
 The Dev Assistant Local Client is designed to streamline your development process by offering a range of functionalities:
 
-- **File Management**: Create, read, update, and delete files. List the contents of a directory.
+- **File Management**: Create, read, update, and delete files. List the contents of a directory. You can manage your files without leaving your conversation with ChatGPT.
 
-- **Git Version Control**: Initialize a Git repository, add changes to the staging area, commit changes, and push changes to a remote repository. Get the status of the Git repository.
+- **Git Version Control**: Initialize a Git repository, add changes to the staging area, commit changes, and push changes to a remote repository. Get the status of the Git repository. You can manage your Git repositories directly through ChatGPT.
 
-- **Terminal Commands Execution**: Execute commands directly in the terminal.
+- **Terminal Commands Execution**: Execute commands directly in the terminal. You can run any command in your terminal directly from ChatGPT.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ Once installed, you can use the `dev-assistant` command in your terminal to star
 
 If you're not already logged in, you'll be prompted to enter your email and password. Once authenticated, the client will automatically establish a connection with the server.
 
-You can now ask ChatGPT to execute commands on your device.
+You can now ask ChatGPT to execute commands on your device. For example, you can ask ChatGPT to create a new file, add changes to a Git repository, or run a command in the terminal.
 
 You can do `CRTL+C` to stop the client at any time.
 
@@ -59,7 +59,7 @@ This command will remove your saved authentication token, ensuring your security
 
 ## Contributing
 
-We welcome contributions! If you have an idea for an improvement or have found a bug, please open an issue. Feel free to fork the repository and submit a pull request if you'd like to contribute code.
+We welcome contributions! If you have an idea for an improvement or have found a bug, please open an issue. Feel free to fork the repository and submit a pull request if you'd like to contribute code. Please follow the code style and conventions used in the existing codebase.
 
 ## License
 
