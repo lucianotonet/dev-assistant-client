@@ -1,9 +1,17 @@
 # Issue 8
 
-## Issue Description
+## Problem
 
-Durante a implementação de correções e melhorias no código, notamos que a abordagem atual de aplicar alterações ao código envolve a exclusão e recriação do arquivo inteiro. Embora isso garanta que as alterações sejam aplicadas corretamente, não é a abordagem mais eficiente.
+We are experiencing an issue with reading the README.md file due to an encoding problem. The error message is: 'charmap' codec can't decode byte 0x8f in position 1040: character maps to <undefined>.
 
-Uma abordagem mais eficiente seria ler o arquivo, aplicar as alterações necessárias ao conteúdo lido e, em seguida, escrever o conteúdo alterado de volta ao arquivo. Isso evitaria a necessidade de excluir e recriar o arquivo inteiro, economizando recursos e tempo.
+## Steps to Reproduce
 
-Esta issue é para investigar a possibilidade de implementar essa abordagem mais eficiente para aplicar alterações ao código.
+1. Try to read the README.md file using the `files_read_file` operation.
+
+## Expected Behavior
+
+The README.md file should be read without any encoding issues.
+
+## Actual Behavior
+
+An encoding error occurs when trying to read the README.md file.
