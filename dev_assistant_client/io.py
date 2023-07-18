@@ -14,6 +14,15 @@ from time import sleep
 
 
 MAX_RETRIES = 5  # Define a maximum number of retries
+MAX_PRINT_SIZE = 500  # Define a maximum size for printing data
+
+
+def print_data(data, headers):
+    """Prints the data in a table if it's not too large"""
+    if len(str(data)) > MAX_PRINT_SIZE:
+        print("Data is too large to display")
+    else:
+        print(tabulate(data, headers=headers, tablefmt="fancy_grid"), end="\n")
 
 
 def execute_request(instruction):
@@ -99,11 +108,8 @@ def send_response(instruction, response):
                 output = response.json()
                 response = output.get('response')
                 logging.info(Fore.LIGHTGREEN_EX +
-                      "Sending response" + Style.RESET_ALL)
-                print(tabulate(
-                    [[json.dumps(response, indent=2)]],
-                    headers=["Response"], tablefmt="fancy_grid"
-                ), end="\n")
+                             "Sending response" + Style.RESET_ALL)
+                print_data([[json.dumps(response, indent=2)]], ["Response"])
                 break
             else:
                 logging.error("Error", response.status_code)
@@ -153,12 +159,12 @@ def check_message(message):
     """Checks the message received from the server"""
     try:
         logging.info(Fore.LIGHTGREEN_EX +
-              "Receiving instruction" + Style.RESET_ALL)
-        print(tabulate(
+                     "Receiving instruction" + Style.RESET_ALL)
+        print_data(
             [[message.data.get('module'), message.data.get('request').get(
                 'operation'), json.dumps(message.data.get('request').get('args'), indent=2)]],
-            headers=["Module", "Operation", "Arguments"], tablefmt="fancy_grid"
-        ), end="\n")
+            ["Module", "Operation", "Arguments"]
+        )
         inform_received(message.data)
         execute_request(message.data)
     except Exception as e:
