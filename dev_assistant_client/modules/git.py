@@ -75,7 +75,8 @@ def git_diff(file_path, directory):
     try:
         repo_path = directory or os.getcwd()
         repo = Repo(repo_path)
-        return {"message": f"Git diff for {file_path} in {repo_path}", "diff": repo.git.diff(file_path)}
+        diff = repo.git.diff(file_path)
+        return {"message": f"Repo diff in {repo_path}", "diff": diff}
     except GitCommandError as e:
         return {"error": str(e)}
     except Exception as e:

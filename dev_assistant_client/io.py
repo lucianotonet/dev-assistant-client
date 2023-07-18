@@ -1,4 +1,3 @@
-from ast import dump
 import asyncio
 import datetime
 import json
@@ -21,7 +20,7 @@ def execute_request(instruction):
     """Executes the request from the server"""
     for _ in range(MAX_RETRIES):
 
-        print(now(), "Executing instruction", sep="\t")
+        logging.info("Executing instruction")
         try:
             module = instruction.get('module')
             request = instruction.get('request')
@@ -39,7 +38,7 @@ def execute_request(instruction):
                 response_data = "Invalid module or operation"
             break
         except Exception as e:
-            print(now(), "Error", e, sep="\t")
+            logging.error("Error", e)
             sleep(1)  # Add a delay before retrying
         else:
             return
@@ -71,13 +70,13 @@ def inform_received(instruction):
                 output = response.json()
                 response = output.get('response')
 
-                print(now(), "Marked as received", sep="\t")
+                logging.info("Marked as received")
                 break
             else:
-                print(now(), "Error", response.status_code,
-                      response.json(), sep="\t")
+                logging.error("Error", response.status_code,
+                      response.json())
         except Exception as e:
-            print(now(), "Error", e, sep="\t")
+            logging.error("Error", e)
             sleep(2)  # Add a delay before retrying
         else:
             return
@@ -99,17 +98,17 @@ def send_response(instruction, response):
             if response.status_code == 200:
                 output = response.json()
                 response = output.get('response')
-                print(now(), Fore.LIGHTGREEN_EX +
-                      "Sending response" + Style.RESET_ALL, sep="\t")
+                logging.info(Fore.LIGHTGREEN_EX +
+                      "Sending response" + Style.RESET_ALL)
                 print(tabulate(
                     [[json.dumps(response, indent=2)]],
                     headers=["Response"], tablefmt="fancy_grid"
                 ), end="\n")
                 break
             else:
-                print(now(), "Error", response.status_code, sep="\t")
+                logging.error("Error", response.status_code)
         except Exception as e:
-            print(now(), "Error", e, sep="\t")
+            logging.error("Error", e)
             sleep(2)  # Add a delay before retrying
         else:
             return
@@ -117,7 +116,7 @@ def send_response(instruction, response):
 
 async def ably_connect():
     """Connects to the Ably server and subscribes to the private channel"""
-    print(now(), "Initiating WebSocket connection...", sep="\t")
+    logging.info("Initiating WebSocket connection...")
     auth_url = 'https://' + APP_URL + API_PATH + '/ably-auth'
     with open(TOKEN_FILE, "r") as f:
         token = f.readline()
@@ -127,7 +126,7 @@ async def ably_connect():
         response = requests.post(auth_url, headers=HEADERS)
         token_request = response.json()
     except Exception as e:
-        print(now(), "Error", e, sep="\t")
+        logging.error("Error", e)
         return
 
     try:
@@ -136,15 +135,15 @@ async def ably_connect():
         response = requests.post(token_url, json=token_request)
         token = response.json()['token']
         realtime = AblyRealtime(token=token)
-        print(now(), "WebSocket connection established", sep="\t")
+        logging.info("WebSocket connection established")
     except Exception as e:
-        print(now(), "Websocket error:", Fore.LIGHTYELLOW_EX + e + Style.RESET_ALL, sep="\t")
+        logging.error("Websocket error:", Fore.LIGHTYELLOW_EX + e + Style.RESET_ALL)
         return
 
     privateChannel = realtime.channels.get('private:dev-assistant-'+DEVICE_ID)
     await privateChannel.subscribe(check_message)
 
-    print(now(), "Ready!", "Waiting for instructions...", sep="\t")
+    logging.info("Ready!", "Waiting for instructions...")
 
     while True:
         await asyncio.sleep(1)
@@ -153,8 +152,8 @@ async def ably_connect():
 def check_message(message):
     """Checks the message received from the server"""
     try:
-        print(now(), Fore.LIGHTGREEN_EX +
-              "Receiving instruction" + Style.RESET_ALL, sep="\t")
+        logging.info(Fore.LIGHTGREEN_EX +
+              "Receiving instruction" + Style.RESET_ALL)
         print(tabulate(
             [[message.data.get('module'), message.data.get('request').get(
                 'operation'), json.dumps(message.data.get('request').get('args'), indent=2)]],
@@ -163,6 +162,5 @@ def check_message(message):
         inform_received(message.data)
         execute_request(message.data)
     except Exception as e:
-        print(now(), "Error", e, sep="\t")
+        logging.error("Error", e)
         return
-
