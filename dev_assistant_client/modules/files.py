@@ -16,6 +16,11 @@ def execute(operation, args):
 
 def create_file(path, content=None):
     try:
+        # Check if directory exists, if not create it
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         with open(path, 'w', encoding='utf-8') as file:
             if content:
                 file.write(content)
@@ -54,7 +59,7 @@ def list_directory(path):
         files = os.listdir(path)
         return {"files": files}
     except Exception as e:
-        return {"error": str(e)}# Instructions for the File Management module
+        return {"error": str(e)}
 
 def create_directory(path):
     try:

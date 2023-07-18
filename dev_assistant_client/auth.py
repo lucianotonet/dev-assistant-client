@@ -3,6 +3,7 @@ import getpass
 import http.client
 import json
 import os
+import logging
 from colorama import Fore, Style
 from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS, now
 
@@ -27,7 +28,7 @@ def login(args):
         with open(TOKEN_FILE, "w") as f:
             f.write(token)
         
-        print(now(), "Logged in.", sep="\t", end="\n")
+        logging.info("Logged in.")
 
         headers = {
             'authorization': 'Bearer ' + token,
@@ -45,13 +46,13 @@ def login(args):
             if 'name' in user:
                 with open(USER_DATA_FILE, "w") as f:
                     json.dump(user, f)
-                print(now(), "Hello, " + Fore.LIGHTCYAN_EX +
-                      user['name'] + Style.RESET_ALL + "!", sep="\t", end="\n")
+                logging.info("Hello, " + Fore.LIGHTCYAN_EX +
+                      user['name'] + Style.RESET_ALL + "!")
 
     else:
         error = json.loads(response.read().decode())
-        print(now(), Fore.LIGHTRED_EX + "Error:", Style.RESET_ALL +
-              response.read().decode(), error.get('message'), sep="\t", end="\n")
+        logging.error("Error: " +
+              response.read().decode() + error.get('message'))
         return
 
 def logout(args):
@@ -63,10 +64,10 @@ def logout(args):
     response = CONN.getresponse()
 
     if response.status == 200:
-        print(now(), "You are now logged out", sep="\t", end="\n")
-        print("Bye!")
+        logging.info("You are now logged out")
+        logging.info("Bye!")
     else:
-        print(now(), "Failed to log out!", sep="\t", end="\n")
+        logging.error("Failed to log out!")
 
     os.remove(USER_DATA_FILE)
     os.remove(TOKEN_FILE)

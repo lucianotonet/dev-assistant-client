@@ -7,17 +7,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-APP_URL = os.getenv('APP_URL').replace('https://', '').replace('/', '') or 'devassistant.tonet.dev'
+APP_URL = os.getenv('APP_URL').replace(
+    'https://', '').replace('/', '') or 'devassistant.tonet.dev'
 API_PATH = '/api'
 
 TOKEN_FILE = os.path.expanduser("~/.dev_assistant_token")
 USER_DATA_FILE = os.path.expanduser("~/.dev_assistant_user")
 ABLY_TOKEN_FILE = os.path.expanduser("~/.dev_assistant_ably_token")
 DEVICE_ID_FILE = os.path.expanduser("~/.dev_assistant_device_id")
-         
+
 # if is set in the env file, use it, otherwise use none
 CERT_FILE = os.getenv('CERT_FILE', '')
 KEY_FILE = os.getenv('KEY_FILE', '')
+
 
 def get_device_id():
     try:
@@ -49,7 +51,8 @@ def flatten_dict(d, parent_key='', sep='.'):
 def print_json(request):
     print(json.dumps(request, indent=4))
 
-def now ():
+
+def now():
     # return just the date and time in a string format
     now = datetime.now()
     return Fore.WHITE + now.strftime("%d/%m/%Y %H:%M:%S") + Style.RESET_ALL
