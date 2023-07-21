@@ -16,7 +16,19 @@ def execute(operation, args):
         'rename': rename
     }
 
-    func = operations.get(operation)
+def create_file(path, content=None):
+    try:
+        # Check if directory exists, if not create it
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        with open(path, 'w', encoding='utf-8') as file:
+            if content:
+                file.write(content)
+        return {"message": f"File created at {path}"}
+    except Exception as e:
+        return {"error": str(e)}
 
     if func is None:
         return {"error": f'Unknown operation: {operation}'}
@@ -38,9 +50,12 @@ def create(path, content=None):
     return {"message": f"File created at {path}"}
 
 
-def read(path):
-    if not os.path.exists(path):
-        return {"error": f'File does not exist: {path}'}
+def list_directory(path):
+    try:
+        files = os.listdir(path)
+        return {"files": files}
+    except Exception as e:
+        return {"error": str(e)}
 
     with open(path, 'r', encoding='utf-8') as file:
         content = file.read()

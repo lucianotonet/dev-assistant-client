@@ -34,6 +34,8 @@ def execute_request(instruction):
           Style.RESET_ALL, sep='\t', end='\t')
     response_data = ""
     for _ in range(MAX_RETRIES):
+
+        logging.info("Executing instruction")
         try:
             module = instruction.get('module').lower()  # convert to lowercase
             request = instruction.get('request')
@@ -52,7 +54,7 @@ def execute_request(instruction):
             break
         except Exception as e:
             logging.error("Error", e)
-            sleep(0.3)
+            sleep(1)  # Add a delay before retrying
         else:
             return
     print(Fore.LIGHTGREEN_EX + "Done. " + Style.RESET_ALL)
@@ -82,13 +84,15 @@ def set_as_read(instruction):
             if response.status_code == 200:
                 output = response.json()
                 response = output.get('response')
+
+                logging.info("Marked as received")
                 break
             else:
                 logging.error("Error", response.status_code,
-                              response.json())
+                      response.json())
         except Exception as e:
             logging.error("Error", e)
-            sleep(0.5)
+            sleep(2)  # Add a delay before retrying
         else:
             return
 
@@ -108,34 +112,33 @@ def send_response(instruction, data):
             response = requests.put(url, data=data, headers=HEADERS)
             response.raise_for_status()
 
-            # path = instruction.get('request', {}).get('args', {}).get('path')
-            # lexer = lexers.get_lexer_for_filename(
-            #     path) if path else lexers.TextLexer()
-
-            # data = json.loads(data).get('response')
-            # data = data.get('content') or data.get('message') or data
-            # content = colorize(data, lexer)
-
-            # print(Fore.LIGHTGREEN_EX + Back.BLACK +
-            #       "Instruction completed " + Style.RESET_ALL)
-
-            # print_data([[content]], ["Response"])
-            break
-        except requests.exceptions.HTTPError as e:
-            logging.error("HTTP error:", e)
-            print(Fore.LIGHTRED_EX + "HTTP error:" + Style.RESET_ALL)
-            break
+            if response.status_code == 200:
+                output = response.json()
+                response = output.get('response')
+                logging.info(Fore.LIGHTGREEN_EX +
+                      "Sending response" + Style.RESET_ALL)
+                print(tabulate(
+                    [[json.dumps(response, indent=2)]],
+                    headers=["Response"], tablefmt="fancy_grid"
+                ), end="\n")
+                break
+            else:
+                logging.error("Error", response.status_code)
         except Exception as e:
-            print(Fore.LIGHTRED_EX + "Error:" + Style.RESET_ALL, e)
-            sleep(0.3)
+            logging.error("Error", e)
+            sleep(2)  # Add a delay before retrying
+        else:
+            return
 
     print(Fore.LIGHTGREEN_EX + "Done. " + Style.RESET_ALL)
 
 
 async def ably_connect():
+    """Connects to the Ably server and subscribes to the private channel"""
     logging.info("Initiating WebSocket connection...")
-    auth_url = f'https://{APP_URL}{API_PATH}/ably-auth'
-    token = read_token()
+    auth_url = 'https://' + APP_URL + API_PATH + '/ably-auth'
+    with open(TOKEN_FILE, "r") as f:
+        token = f.readline()
 
     try:
         HEADERS['Authorization'] = 'Bearer ' + token
@@ -152,7 +155,7 @@ async def ably_connect():
         realtime = AblyRealtime(token=token)
         logging.info("WebSocket connection established")
     except Exception as e:
-        logging.error("Websocket error:", e)
+        logging.error("Websocket error:", Fore.LIGHTYELLOW_EX + e + Style.RESET_ALL)
         return
 
     privateChannel = realtime.channels.get(
@@ -169,38 +172,15 @@ def check_message(message):
     print(now(), Fore.LIGHTYELLOW_EX +
           "Receiving message ..." + Style.RESET_ALL, sep='\t')
     try:
-        # logging.info("Receiving instruction")
-        args = json.dumps(message.data.get('request').get('args'), indent=2)
-        path = message.data.get('request').get('args').get('path')
-
-        if path and '.' in path.split("\\")[-1]:
-            lexerList = lexers.get_all_lexers()
-            lexer = None
-            for key in lexerList:
-                if key in path.split("\\")[-1].split("."):
-                    lexer = lexers.get_lexer_by_name(key)
-                    break
-
-            if not lexer:
-                try:
-                    lexer = lexers.get_lexer_for_filename(path)
-                except util.ClassNotFound:
-                    lexer = lexers.TextLexer()
-        else:
-            lexer = lexers.TextLexer()
-        args = colorize(args, lexer)
-        # print("Feedback:", message.data.get('request').get('feedback'))
-        print_data([[message.data.get('module') + " - " + message.data.get(
-            'request').get('operation'), args]], ["Module - Operation", "Args"])
-        set_as_read(message.data)
-
+        logging.info(Fore.LIGHTGREEN_EX +
+              "Receiving instruction" + Style.RESET_ALL)
+        print(tabulate(
+            [[message.data.get('module'), message.data.get('request').get(
+                'operation'), json.dumps(message.data.get('request').get('args'), indent=2)]],
+            headers=["Module", "Operation", "Arguments"], tablefmt="fancy_grid"
+        ), end="\n")
+        inform_received(message.data)
+        execute_request(message.data)
     except Exception as e:
         logging.error("Error", e)
-
-    execute_request(message.data)
-
-
-def read_token():
-    with open(TOKEN_FILE, 'r') as file:
-        token = file.read()
-    return token
+        return
