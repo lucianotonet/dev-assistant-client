@@ -1,72 +1,98 @@
+import logging
 import os
+import shutil
+class FileOperationException(Exception):
+    pass
 
 def execute(operation, args):
-    if operation == 'create_file':
-        return create_file(args.get('path'), args.get('content'))
-    elif operation == 'read_file':
-        return read_file(args.get('path'))
-    elif operation == 'update_file':
-        return update_file(args.get('path'), args.get('content'), args.get('mode'))
-    elif operation == 'delete_file':
-        return delete_file(args.get('path'))
-    elif operation == 'list_directory':
-        return list_directory(args.get('path'))
-    else:
-        return {'error': f'Unknown operation: {operation}'}
+    operations = {
+        'create': create,
+        'read': read,
+        'update': update,
+        'delete': delete,
+        'list': list_dir,
+        'copy': copy,
+        'move': move,
+        'rename': rename
+    }
 
-def create_file(path, content=None):
+    func = operations.get(operation)
+
+    if func is None:
+        return {"error": f'Unknown operation: {operation}'}
+
     try:
-        # Check if directory exists, if not create it
-        directory = os.path.dirname(path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        with open(path, 'w', encoding='utf-8') as file:
-            if content:
-                file.write(content)
-        return {"message": f"File created at {path}"}
+        return func(**args)
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": e}
 
-def read_file(path):
-    try:
-        with open(path, 'r') as file:
-            content = file.read()
-        return {"content": content}
-    except Exception as e:
-        return {"error": str(e)}
 
-def update_file(path, content, mode='a'):
-    try:
-        with open(path, mode, encoding='utf-8') as file:
+def create(path, content=None):
+    directory = os.path.dirname(path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    with open(path, 'w', encoding='utf-8') as file:
+        if content:
             file.write(content)
-        return {"message": f"File updated at {path}"}
-    except Exception as e:
-        return {"error": str(e)}
+    return {"message": f"File created at {path}"}
 
-def delete_file(path):
-    try:
-        if os.path.isdir(path):
-            os.rmdir(path)
-        else:
-            os.remove(path)
-        return {"message": f"File or directory deleted at {path}"}
-    except Exception as e:
-        return {"error": str(e)}
 
-def list_directory(path):
-    try:
-        files = os.listdir(path)
-        return {"files": files}
-    except Exception as e:
-        return {"error": str(e)}
+def read(path):
+    if not os.path.exists(path):
+        return {"error": f'File does not exist: {path}'}
 
-def create_directory(path):
-    try:
-        if os.path.isdir(path):
-            return {"message": f"Directory already exists at {path}"}
-        else:
-            os.mkdir(path)
-            return {"message": f"Directory created at {path}"}
-    except Exception as e:
-        return {"error": str(e)}
+    with open(path, 'r', encoding='utf-8') as file:
+        content = file.read()
+
+    return {"content": content}
+
+
+def update(path, content):
+    if not os.path.exists(path):
+        return {"error": f'File does not exist: {path}'}
+
+    with open(path, 'w', encoding='utf-8') as file:
+        file.write(content)
+
+    return {"message": f"File updated at {path}"}
+
+
+def delete(path):
+    if not os.path.exists(path):
+        return {"error": f'File does not exist: {path}'}
+
+    os.remove(path)
+    return {"message": f"File deleted at {path}"}
+
+
+def list_dir(path):
+    if not os.path.exists(path):
+        return {"error": f'Directory does not exist: {path}'}
+
+    files = os.listdir(path)
+    return {"files": files}
+
+
+def copy(source, destination):
+    if not os.path.exists(source):
+        return {"error": f'File does not exist: {source}'}
+
+    shutil.copy(source, destination)
+    return {"message": f"File copied from {source} to {destination}"}
+
+
+def move(source, destination):
+    if not os.path.exists(source):
+        return {"error": f'File does not exist: {source}'}
+
+    shutil.move(source, destination)
+    return {"message": f"File moved from {source} to {destination}"}
+
+
+def rename(source, destination):
+    if not os.path.exists(source):
+        return {"error": f'File does not exist: {source}'}
+
+    shutil.move(source, destination)
+    return {"message": f"File renamed from {source} to {destination}"}
