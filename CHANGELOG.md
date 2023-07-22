@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [1.0.0] - 2023-07-22
+## [0.1.16] - 2023-07-22
 
 ### Added
 
@@ -10,7 +10,7 @@
 - Fixed bugs in the git_module.
 - Added tests for the git_module.
 
-## [0.9.0] - 2023-07-21
+## [0.1.15] - 2023-07-21
 
 ### Added
 

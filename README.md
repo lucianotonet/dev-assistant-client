@@ -1,11 +1,12 @@
 # Dev Assistant Client
 
-The Dev Assistant Client is a tool that helps developers with their daily tasks. It can perform file operations, git operations, and more.
+The Dev Assistant Client is a tool that helps developers with their daily tasks. It can perform file operations, git operations, terminal operations, and more.
 
 ## Features
 
 - File operations: create, read, update, delete, list
 - Git operations: init, add, commit, push, status, diff, log
+- Terminal operations: run command
 
 ## Usage
 
