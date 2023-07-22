@@ -1,44 +1,26 @@
-import logging
 import os
 import shutil
-class FileOperationException(Exception):
-    pass
 
 def execute(operation, args):
-    operations = {
-        'create': create,
-        'read': read,
-        'update': update,
-        'delete': delete,
-        'list': list_dir,
-        'copy': copy,
-        'move': move,
-        'rename': rename
-    }
-
-def create_file(path, content=None):
-    try:
-        # Check if directory exists, if not create it
-        directory = os.path.dirname(path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        with open(path, 'w', encoding='utf-8') as file:
-            if content:
-                file.write(content)
-        return {"message": f"File created at {path}"}
-    except Exception as e:
-        return {"error": str(e)}
-
-    if func is None:
-        return {"error": f'Unknown operation: {operation}'}
-
-    try:
-        return func(**args)
-    except Exception as e:
-        return {"error": e}
-
-
+    if operation == 'create':
+        return create(args.get('path'), args.get('content'))
+    elif operation == 'read':
+        return read(args.get('path'))
+    elif operation == 'update':
+        return update(args.get('path'), args.get('content'))
+    elif operation == 'delete':
+        return delete(args.get('path'))
+    elif operation == 'list':
+        return list_dir(args.get('path'))
+    elif operation == 'copy':
+        return copy(args.get('source'), args.get('destination'))
+    elif operation == 'move':
+        return move(args.get('source'), args.get('destination'))
+    elif operation == 'rename':
+        return rename(args.get('source'), args.get('destination'))
+    else:
+        return {'error': f'Unknown operation: {operation}'}
+        
 def create(path, content=None):
     directory = os.path.dirname(path)
     if not os.path.exists(directory):
@@ -50,12 +32,9 @@ def create(path, content=None):
     return {"message": f"File created at {path}"}
 
 
-def list_directory(path):
-    try:
-        files = os.listdir(path)
-        return {"files": files}
-    except Exception as e:
-        return {"error": str(e)}
+def read(path):
+    if not os.path.exists(path):
+        return {"error": f'File does not exist: {path}'}
 
     with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
@@ -79,8 +58,7 @@ def delete(path):
 
     os.remove(path)
     return {"message": f"File deleted at {path}"}
-
-
+ 
 def list_dir(path):
     if not os.path.exists(path):
         return {"error": f'Directory does not exist: {path}'}

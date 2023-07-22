@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 APP_URL = os.getenv('APP_URL').replace(
-    'https://', '').replace('/', '') or 'devassistant.tonet.dev'
+    'https://', '').replace('/', '') if os.getenv('APP_URL') else 'devassistant.tonet.dev'
 API_PATH = '/api'
 
 TOKEN_FILE = os.path.expanduser("~/.dev_assistant_token")
@@ -19,6 +19,8 @@ DEVICE_ID_FILE = os.path.expanduser("~/.dev_assistant_device_id")
 # if is set in the env file, use it, otherwise use none
 CERT_FILE = os.getenv('CERT_FILE', '')
 KEY_FILE = os.getenv('KEY_FILE', '')
+
+IS_PREMIUM_USER = os.getenv('IS_PREMIUM_USER', 'false').lower() == 'true'
 
 
 def get_device_id():
