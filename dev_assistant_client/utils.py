@@ -1,3 +1,4 @@
+from pystray import Icon as icon
 from io import BytesIO
 import threading
 from pystray import Icon as icon, MenuItem as item
@@ -102,3 +103,25 @@ def read_token():
             return f.readline()
     except FileNotFoundError:
         return None
+
+# URLs dos ícones
+ICON_URLS = {
+    "blue": "tray_icon_blue.png",
+    "red": "tray_icon_red.png",
+    "green": "tray_icon_green.png",
+    "yellow": "tray_icon_yellow.png",
+}
+
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)', 'Accept': 'image/webp,image/png,image/*,*/*;q=0.8'}
+
+# Carrega os ícones
+ICONS = {color: Image.open(BytesIO(requests.get('https://devassistant.tonet.dev/img/' + url, headers=headers).content))
+            for color, url in ICON_URLS.items()}
+
+# Cria o ícone da bandeja do sistema
+tray_icon = icon("dev_assistant", ICONS["green"], "Dev Assistant")
+
+def change_icon_color(color):
+    """Altera a cor do ícone da bandeja do sistema."""
+    tray_icon.icon = 'https://devassistant.tonet.dev/img/' + ICONS[color]
+    tray_icon.update()
