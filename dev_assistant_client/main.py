@@ -1,9 +1,6 @@
 import logging
-import threading
 import asyncio
-import datetime
 import sys
-from pusherclient import Pusher
 import argparse
 import os
 import time
@@ -11,8 +8,7 @@ from dotenv import load_dotenv
 from colorama import Fore, Style
 from dev_assistant_client.auth import login, logout
 from dev_assistant_client.device import connect
-from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE, ABLY_TOKEN_FILE, now, change_icon_color, tray_icon
-from pusher import Pusher
+from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE
 import pkg_resources
 
 # Get the version of the current package

@@ -1,25 +1,16 @@
 # Dev Assistant Client
 
-The Dev Assistant Client is a tool that helps developers with their daily tasks. It can perform file operations, git operations, terminal operations, and more.
+Dev Assistant Client é uma ferramenta que ajuda os desenvolvedores com suas tarefas diárias. Ele pode realizar operações de arquivo, operações git, operações de terminal e muito mais.
 
-## Features
+## Novidades
 
-- File operations: create, read, update, delete, list
-- Git operations: init, add, commit, push, status, diff, log
-- Terminal operations: run command
+- Implementado o manuseio de arquivos grandes usando chunks (Issue 1).
+- Adicionado método `git_diff` ao módulo git (Issue 7).
 
-## Usage
+## Instalação
 
-To use the Dev Assistant Client, you need to install it on your machine. After installation, you can use it through the command line interface.
+Para usar o Dev Assistant Client, você precisa instalá-lo em sua máquina. Após a instalação, você pode usá-lo através da interface de linha de comando.
 
-## Changelog
+## Licença
 
-For the versions available, see the [Changelog](./CHANGELOG.md).
-
-## Authors
-
-- Dev Assistant AI
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+Este projeto está licenciado sob a Licença MIT.

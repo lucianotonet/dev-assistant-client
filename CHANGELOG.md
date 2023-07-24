@@ -2,18 +2,15 @@
 
 ## [Unreleased]
 
-## [0.1.16] - 2023-07-22
+## [1.0.1] - 2023-07-24
 
 ### Added
 
-- Implemented git operations: init, add, commit, push, status, diff, log in the git_module.
-- Fixed bugs in the git_module.
-- Added tests for the git_module.
+- Implemented handling of large files using chunks (Issue 1).
+- Added `git_diff` method to git module (Issue 7).
 
-## [0.1.15] - 2023-07-21
+## [1.0.0] - 2023-07-23
 
 ### Added
 
-- Initial release of the Dev Assistant Client.
-- Basic file operations: create, read, update, delete, list.
-- Basic git operations: init, add, commit, push, status.
+- Initial release of Dev Assistant Client.
