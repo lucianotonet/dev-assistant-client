@@ -1,15 +1,8 @@
-from pystray import Icon as icon
-from io import BytesIO
-import threading
-from pystray import Icon as icon, MenuItem as item
-from PIL import Image
 from datetime import datetime
 import json
 import os
-import sys
 from colorama import Fore, Style
 from dotenv import load_dotenv
-import requests
 
 load_dotenv()
 
@@ -27,38 +20,6 @@ CERT_FILE = os.getenv('CERT_FILE', '')
 KEY_FILE = os.getenv('KEY_FILE', '')
 
 IS_PREMIUM_USER = os.getenv('IS_PREMIUM_USER', 'false').lower() == 'true'
-
-
-def load_icon(icon):
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)',
-               'Accept': 'image/webp,image/png,image/*,*/*;q=0.8'}
-    url = 'https://devassistant.tonet.dev/img/' + icon
-    response = requests.get(url, headers=headers)
-    image = Image.open(BytesIO(response.content))
-    return image
-
-
-def create_icon(image, name):
-    return icon(name, image, "Dev Assistant")
-
-
-def show_icon(icon):
-    def run_icon():
-        icon.run()
-    threading.Thread(target=run_icon).start()
-
-
-def change_icon_color(icon, new_color_icon):
-    icon.stop()
-    new_color_icon.run()
-
-
-green_icon = load_icon('tray_icon_green.png')
-red_icon = load_icon('tray_icon_red.png')
-yellow_icon = load_icon('tray_icon_yellow.png')
-blue_icon = load_icon('tray_icon_blue.png')
-tray_icon = create_icon(green_icon, 'dev_assistant')
-show_icon(tray_icon)
 
 def get_device_id():
     try:
