@@ -1,3 +1,5 @@
+import logging
+import threading
 import asyncio
 import datetime
 import sys
@@ -12,10 +14,6 @@ from dev_assistant_client.device import connect
 from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE, ABLY_TOKEN_FILE, now
 from pusher import Pusher
 import pkg_resources
-from PIL import Image
-from pystray import Icon as icon, MenuItem as item
-import requests
-from io import BytesIO
 
 # Get the version of the current package
 package_version = pkg_resources.get_distribution(
@@ -29,22 +27,6 @@ print(Fore.LIGHTGREEN_EX +
 ''' + Style.RESET_ALL)
 
 load_dotenv()
-
-
-def load_icon(url):
-    response = requests.get(url)
-    image = Image.open(BytesIO(response.content))
-    return image
-
-def create_icon(image, name):
-    return icon(name, image, "Dev Assistant")
-
-def show_icon(icon):
-    icon.run()
-
-def change_icon_color(icon, new_color_icon):
-    icon.stop()
-    new_color_icon.run()
 
 async def main(args=None):
     # Parse command line arguments
@@ -66,7 +48,7 @@ async def main(args=None):
         except KeyboardInterrupt:
             print("Closing app", "See you soon!")
         except Exception as e:
-            print("Error:", e)
+            logging.error("Error:", e)
     else:
         await start(args)
 
@@ -77,7 +59,7 @@ async def start(args):
             login(args)
         await connect()
     except Exception as e:
-        print("Error:", e)
+        logging.error("Error:", e)
     while True:
         time.sleep(1)
 
@@ -87,7 +69,6 @@ def run():
         asyncio.run(main())
     except KeyboardInterrupt:
         sys.exit(0)
-
 
 if __name__ == "__main__":
     run()

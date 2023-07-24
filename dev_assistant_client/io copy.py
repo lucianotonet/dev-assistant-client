@@ -12,7 +12,7 @@ from tabulate import tabulate
 
 from dev_assistant_client.auth import CONN, HEADERS
 from dev_assistant_client.modules import files, git_module, terminal
-from dev_assistant_client.utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE, now, change_icon_color, blue_icon, yellow_icon, green_icon
+from dev_assistant_client.utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE, now
 
 MAX_RETRIES = 5
 
@@ -28,7 +28,6 @@ def colorize(content: str, lexer) -> str:
 def execute_request(instruction):
     print(now(), Fore.LIGHTYELLOW_EX + "Executing task ... " +
           Style.RESET_ALL, sep='\t', end='\t')
-    change_icon_color(blue_icon)
 
     response = ""
     module = instruction.get('module').lower()  # convert to lowercase
@@ -124,38 +123,52 @@ async def ably_connect():
         logging.error("Error", e)
         return
 
-    ably = AblyRealtime(token_details=token_request)
-    channel = ably.channels.get(DEVICE_ID)
+    try:
+        token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
+        response = requests.post(token_url, json=token_request)
+        token = response.json()['token']
+        realtime = AblyRealtime(token=token)
+        logging.info("WebSocket connection established")
+    except Exception as e:
+        logging.error("Websocket error:", e)
+        return
 
-    def on_message(message):
-        instruction = json.loads(message.data)
-        print(now(), Fore.LIGHTYELLOW_EX + "New instruction received." +
-              Style.RESET_ALL, sep='\t')
-        change_icon_color(yellow_icon)
-        response = execute_request(instruction)
+    privateChannel = realtime.channels.get(
+        f'private:dev-assistant-{DEVICE_ID}')
+    await privateChannel.subscribe(process_message)
+
+    logging.info("Ready!", "Waiting for instructions...")
+
+    while True:
+        await asyncio.sleep(1)
+
+
+def process_message(message):
+    print(now(), Fore.LIGHTYELLOW_EX +
+          "Receiving message ..." + Style.RESET_ALL, sep='\t')
+    instruction = message.data
+
+    try:
         set_as_read(instruction)
-        send_response(instruction, response)
-        change_icon_color(green_icon)
-
-    channel.subscribe(on_message)
+    except Exception as e:
+        logging.error("Error", e)
 
     try:
-        while True:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        ably.close()
-        print(now(), "Closing app", "See you soon!", sep='\t')
-        change_icon_color(red_icon)
-        sleep(1)
-        sys.exit(0)
+        response_data = execute_request(instruction)
+
+        token = read_token()
+        HEADERS['Authorization'] = 'Bearer ' + token
+
+        payload = json.dumps({
+            'response': response_data
+        })
+
+        send_response(instruction, payload)
+    except Exception as e:
+        logging.error("Error", e)
 
 
-async def main():
-    await ably_connect()
-
-
-if __name__ == '__main__':
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        sys.exit(0)
+def read_token():
+    with open(TOKEN_FILE, 'r') as file:
+        token = file.read()
+    return token
