@@ -16,11 +16,6 @@ from dev_assistant_client.utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE,
 
 MAX_RETRIES = 5
 
-
-# def print_data(data, headers):
-#     print(tabulate(data, headers=headers, tablefmt="fancy_grid"), end="\n")
-
-
 def colorize(content: str, lexer) -> str:
     if content is not None:
         content = highlight(content.strip(), lexer,

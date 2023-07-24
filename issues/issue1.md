@@ -2,7 +2,7 @@
 
 ## Large File Handling
 
-When sending large files over the network, we encounter a size limit. The current solution is to encode the file content in base64, but this still has a limit and is not the most efficient solution.
+When writing large files, we encounter a size limit or JSON "error". The current solution is to encode the file content in base64, but this still has a limit and is not the most efficient solution.
 
 ### Proposed Solution
 

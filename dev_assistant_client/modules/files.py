@@ -34,7 +34,10 @@ def create(path, content=None):
 
 def read(path):
     if not os.path.exists(path):
-        return {"error": f'File does not exist: {path}'}
+        return {"error": f'Path does not exist: {path}'}
+
+    if os.path.isdir(path):
+        return list_dir(path)
 
     with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
