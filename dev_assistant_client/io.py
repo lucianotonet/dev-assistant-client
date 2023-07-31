@@ -145,7 +145,7 @@ async def ably_connect():
 
 def process_message(message):
     print(now(), Fore.LIGHTYELLOW_EX +
-          "Receiving message ..." + Style.RESET_ALL, sep='\t')
+          "Receiving message ..." + Style.RESET_ALL, message.data.get('feedback'), sep='\t')
     instruction = message.data
 
     try:

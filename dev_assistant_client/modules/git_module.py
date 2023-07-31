@@ -78,7 +78,7 @@ def git_push(remote, branch, directory):
         repo_path = directory or os.getcwd()
         repo = Repo(repo_path)
         repo.git.push(remote, branch)
-        return {"message": f"Repo push in {repo_path}"}
+        return {"message": f"Repo pushed to {remote} {branch} in {repo_path}"}
     except GitCommandError as e:
         return {"error": str(e)}
     except Exception as e:
