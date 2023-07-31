@@ -27,25 +27,40 @@ The Dev Assistant Local Client is designed to streamline your development proces
 ## Installation
 
 - Create a Dev Assistant account at [devassistant.tonet.dev](https://devassistant.tonet.dev)
-- Generate a token at [devassistant.tonet.dev/token](https://devassistant.tonet.dev/token) for ChatGPT and save it. You'll need it later.
+- Generate a token at [https://devassistant.tonet.dev/user/api-tokens](https://devassistant.tonet.dev/user/api-tokens) for ChatGPT and save it. You'll need it later.
 - Install the local client:
   - [Install Python](https://www.python.org/downloads/)
-  - [Install pip](https://pip.pypa.io/en/stable/installing/)
-  - Run `pip install dev-assistant-client` in your terminal
-  - You will be prompted to enter your email and password. Enter the credentials you used to create your Dev Assistant account.
-  - If everything went well, you should see a message saying "Successfully logged in!" and the client will be listening for instructions from ChatGPT.
+  - [Install pip](https://pip.pypa.io/en/stable/)
+  - Run `pip install dev-assistant-client` in your terminal  
 - Install the ChatGPT plugin:
   - On the [ChatGPT Plugins Store](https://chat.openai.com/plugins), click in the **"Install an unverified plugin"** at bottom of Plugin store dialog window, paste the <https://devassistant.tonet.dev> and click on "Find plugin".
-  - ChatGPT will ask you to enter your credentials. Insert the token generated in the previous step and click "Install plugin".
+  - ChatGPT will ask you to enter your credentials. Insert the token generated in the second step and click "Install plugin".
   - Enable the plugin in the list of installed plugins and you're good to go!
 
 ## Usage
 
-Once installed, you can use the `dev-assistant` command in your terminal to start the client.
+Once installed, just run the following:
+```bash
+dev-assistant
+```
 
-If you're not already logged in, you'll be prompted to enter your email and password. Once authenticated, the client will automatically establish a connection with the server.
+You will be prompted to enter your email and password, if you're not already logged in. Once authenticated, the client will automatically establish a connection with the server.
 
-You can now ask ChatGPT to execute commands on your device. For example, you can ask ChatGPT to create a new file, add changes to a Git repository, or run a command in the terminal.
+
+If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive *Device ID*, like this:
+```
+# dev-assistant
+
+    .-----.   Dev Assistant
+    | >_< |   v0.1.28
+    '-----'   https://devassistant.tonet.dev
+
+31/07/2023 00:43:19     Connecting...
+31/07/2023 00:43:20     Connected.      Device ID 654c5jf7-7993-4b44-ae92-ec51t88339cd
+...
+```
+
+You can now ask ChatGPT to help you directly on that device.
 
 You can do `CRTL+C` to stop the client at any time.
 
