@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-APP_URL = os.getenv('APP_URL').replace(
-    'https://', '').replace('/', '') if os.getenv('APP_URL') else 'devassistant.tonet.dev'
+appURL = os.getenv('APP_URL')
+APP_URL = appURL.replace('https://', '').replace('/', '') if appURL else 'devassistant.tonet.dev'
 API_PATH = '/api'
 
 TOKEN_FILE = os.path.expanduser("~/.dev_assistant_token")

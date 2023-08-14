@@ -1,11 +1,10 @@
-import datetime
 import getpass
 import http.client
 import json
 import os
 import logging
 from colorama import Fore, Style
-from dev_assistant_client.utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS, now
+from .utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS, now
 
 CONN = http.client.HTTPSConnection(
     APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)

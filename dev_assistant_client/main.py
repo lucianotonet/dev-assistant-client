@@ -6,9 +6,9 @@ import os
 import time
 from dotenv import load_dotenv
 from colorama import Fore, Style
-from dev_assistant_client.auth import login, logout
-from dev_assistant_client.device import connect
-from dev_assistant_client.utils import APP_URL, TOKEN_FILE, USER_DATA_FILE
+from .auth import login, logout
+from .device import connect
+from .utils import APP_URL, TOKEN_FILE, USER_DATA_FILE
 import pkg_resources
 
 # Get the version of the current package

@@ -1,5 +1,4 @@
 import subprocess
-import os
 
 def execute(operation, args):
     if operation == 'run':

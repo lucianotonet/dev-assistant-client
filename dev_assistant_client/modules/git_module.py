@@ -1,5 +1,5 @@
 import os
-from git import Repo
+from git.repo import Repo
 from git.exc import GitCommandError
 from dev_assistant_client.utils import IS_PREMIUM_USER
 
