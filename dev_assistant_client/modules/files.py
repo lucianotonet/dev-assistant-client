@@ -72,7 +72,11 @@ def list_dir(path):
     if not os.path.exists(path):
         return {"error": f"Directory does not exist: {path}"}
 
-    files = os.listdir(path)
+    try:
+        files = os.listdir(path)
+    except Exception as e:
+        return {"error": f"Error listing directory: {e}"}
+    
     return {"files": files}
 
 

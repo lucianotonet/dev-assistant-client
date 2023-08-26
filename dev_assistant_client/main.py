@@ -17,9 +17,9 @@ package_version = pkg_resources.get_distribution(
 
 print(Fore.LIGHTGREEN_EX +
       '''
-    .-----.   Dev Assistant
-    | >_< |   ''' + Fore.LIGHTYELLOW_EX + 'v' + package_version + Fore.LIGHTGREEN_EX + ''' 
-    '-----'   ''' + Fore.LIGHTYELLOW_EX + 'https://' + (APP_URL or 'devassistant.tonet.dev') + Fore.LIGHTGREEN_EX + '''
+   ╭─────╮   Dev Assistant
+   │ ''' + Fore.WHITE + '>_<' + Fore.LIGHTGREEN_EX + ''' │   ''' + Fore.LIGHTYELLOW_EX + 'v' + package_version + Fore.LIGHTGREEN_EX + ''' 
+   ╰─────╯   ''' + Fore.LIGHTYELLOW_EX + 'https://' + (APP_URL or 'devassistant.tonet.dev') + Fore.LIGHTGREEN_EX + '''
 ''' + Style.RESET_ALL)
 
 load_dotenv()

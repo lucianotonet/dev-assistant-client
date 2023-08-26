@@ -25,7 +25,7 @@ from .modules import git_module
 from .modules import terminal
 from .utils import API_PATH, APP_URL, DEVICE_ID, TOKEN_FILE, now
 
-MAX_RETRIES = 5
+MAX_RETRIES = 2
 
 
 def colorize(content: str, lexer) -> str:
@@ -64,10 +64,13 @@ def execute_request(instruction):
                 response = "Invalid module or operation"
             break
         except Exception as e:
-            logging.error("Error", e)
-            sleep(0.3)
+            #  TODO: handle exceptions
+            # logging.error("Error", e)
+            print(Fore.LIGHTRED_EX + "ERROR:" + Style.RESET_ALL)
+            print(e)
+            sleep(0.5)
         else:
-            return
+            return response
     print(Fore.LIGHTGREEN_EX + "Done." + Style.RESET_ALL)
     return response
 
