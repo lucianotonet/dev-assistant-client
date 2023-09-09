@@ -33,7 +33,7 @@ DEVICE_ID = get_device_id()
 HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'User-Agent': 'DevAssistantClient/1.0'
+    'User-Agent': 'devassistant/1.0'
 }
 
 

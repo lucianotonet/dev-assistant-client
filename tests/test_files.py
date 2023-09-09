@@ -1,6 +1,6 @@
 import os
 import pytest
-from dev_assistant_client.modules.files import execute, create, read, update, delete, list_dir
+from devassistant.modules.files import execute, create, read, update, delete, list_dir
 
 @pytest.fixture
 def file_path(tmpdir):
