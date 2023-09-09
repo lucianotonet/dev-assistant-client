@@ -2,7 +2,6 @@ import os
 import shutil
 import unidiff
 
-
 def execute(operation, args):
     if operation == "create":
         return create(args.get("path"), args.get("content"))

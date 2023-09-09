@@ -1,7 +1,7 @@
 import os
 from git.repo import Repo
 from git.exc import GitCommandError
-from dev_assistant_client.utils import IS_PREMIUM_USER
+from ..utils import IS_PREMIUM_USER
 
 # Add the DevAssistant's username and email
 dev_assistant_username = 'Dev Assistant AI'
