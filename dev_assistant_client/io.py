@@ -130,6 +130,16 @@ def send_response(instruction, data):
     print(Fore.LIGHTGREEN_EX + "Done. " + Style.RESET_ALL)
     return
 
+def request_new_token():
+    # Fazer uma solicitação HTTP para o endpoint de autenticação
+    response = requests.post(f"https://{APP_URL}{API_PATH}/login", headers=HEADERS)
+    # Verificar se a solicitação foi bem-sucedida
+    if response.status_code == 200:
+        # Retornar o novo token
+        return response.json()["token"]
+    else:
+        # Tratar erros
+        raise Exception("Não foi possível obter um novo token")
 
 async def ably_connect():
     logging.info("Initiating WebSocket connection...")
@@ -142,7 +152,13 @@ async def ably_connect():
         token_request = response.json()
     except Exception as e:
         logging.error("Error", e)
-        return
+        # Se a autenticação falhar, solicite um novo token
+        new_token = request_new_token()
+        # Salve o novo token no arquivo de token
+        with open(TOKEN_FILE, "w") as f:
+            f.write(new_token)
+        # Tente conectar novamente
+        return ably_connect()
 
     try:
         token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
