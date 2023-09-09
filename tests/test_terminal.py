@@ -2,7 +2,7 @@
 import pytest
 import os
 
-from devassistant.modules.terminal import execute
+from dev_assistant_client.modules.terminal import execute
 
 def test_execute_run_command():
     # Test running a valid command
@@ -16,7 +16,7 @@ def test_execute_run_command():
     assert 'invalid_command' in result['stderr']
     
     # Test changing directory
-    result = execute('run', {'command': 'pwd && cd devassistant/modules/ && pwd'})
+    result = execute('run', {'command': 'pwd && cd dev_assistant/modules/ && pwd'})
     assert 'modules' in result['stdout']
     
     # Test changing directory to an invalid directory

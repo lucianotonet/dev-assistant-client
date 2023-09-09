@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
-devassistant.egg-info
-build/lib/devassistant
+dev_assistant_client.egg-info
+build/lib/dev_assistant
 **/__pycache__/
 __pycache__/
 *.py[cod]

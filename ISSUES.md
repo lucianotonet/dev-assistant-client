@@ -9,9 +9,9 @@ Enter your password:
 ERROR:root:Error: The provided credentials are incorrect.
 --- Logging error ---
 Traceback (most recent call last):
-  File "d:\www\dev-assistant-client\devassistant\main.py", line 56, in start
+  File "d:\www\dev-assistant-client\dev_assistant\main.py", line 56, in start
     await connect()
-  File "d:\www\dev-assistant-client\devassistant\device.py", line 52, in connect
+  File "d:\www\dev-assistant-client\dev_assistant\device.py", line 52, in connect
     with open(TOKEN_FILE, "r") as f:
          ^^^^^^^^^^^^^^^^^^^^^
 FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Tonet.dev/.dev_assistant_token'
@@ -35,7 +35,7 @@ TypeError: not all arguments converted during string formatting
 Call stack:
   File "C:\Python311\Scripts\dev-assistant-script.py", line 33, in <module>
     sys.exit(load_entry_point('dev-assistant-client', 'console_scripts', 'dev-assistant')())
-  File "d:\www\dev-assistant-client\devassistant\main.py", line 65, in run
+  File "d:\www\dev-assistant-client\dev_assistant\main.py", line 65, in run
     asyncio.run(main())
   File "C:\Python311\Lib\asyncio\runners.py", line 190, in run
     return runner.run(main)
@@ -51,9 +51,9 @@ Call stack:
     handle._run()
   File "C:\Python311\Lib\asyncio\events.py", line 80, in _run
     self._context.run(self._callback, *self._args)
-  File "d:\www\dev-assistant-client\devassistant\main.py", line 49, in main
+  File "d:\www\dev-assistant-client\dev_assistant\main.py", line 49, in main
     await start(args)
-  File "d:\www\dev-assistant-client\devassistant\main.py", line 58, in start
+  File "d:\www\dev-assistant-client\dev_assistant\main.py", line 58, in start
     logging.error("Error:", e)
 Message: 'Error:'
 Arguments: (FileNotFoundError(2, 'No such file or directory'),)

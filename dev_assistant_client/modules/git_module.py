@@ -1,11 +1,11 @@
 import os
 from git.repo import Repo
 from git.exc import GitCommandError
-from devassistant.utils import IS_PREMIUM_USER
+from dev_assistant_client.utils import IS_PREMIUM_USER
 
 # Add the DevAssistant's username and email
-devassistant_username = 'Dev Assistant AI'
-devassistant_email = 'devassistant@tonet.dev'
+dev_assistant_username = 'Dev Assistant AI'
+dev_assistant_email = 'devassistant@tonet.dev'
 
 def execute(operation, args):
     if operation == 'init':
@@ -18,7 +18,7 @@ def execute(operation, args):
             return git_commit(args.get('message'), args.get('directory'), args.get('username'), args.get('email'))
         # For non-premium users, use the DevAssistant's username and email for commits
         else:
-            return git_commit(args.get('message'), args.get('directory'), devassistant_username, devassistant_email)
+            return git_commit(args.get('message'), args.get('directory'), dev_assistant_username, dev_assistant_email)
     elif operation == 'push':
         return git_push(args.get('remote'), args.get('branch'), args.get('directory'))
     elif operation == 'status':
@@ -64,7 +64,7 @@ def git_commit(message, directory, username=None, email=None):
             repo.git.commit('-m', message, author=f'{username} <{email}>')
         # Otherwise, use the default username and email for the commit
         else:
-            repo.git.commit('-m', message, author=f'{devassistant_username} <{devassistant_email}>')
+            repo.git.commit('-m', message, author=f'{dev_assistant_username} <{dev_assistant_email}>')
 
         return {"message": f"Repo commit in {repo_path}"}
     except GitCommandError as e:
