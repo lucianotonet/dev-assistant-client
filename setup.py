@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='dev-assistant-client',
-    version='0.1.34',
+    version='0.1.35',
     url='https://github.com/lucianotonet/dev-assistant-client',
     author='Luciano Tonet',
     author_email='tonetlds@gmail.com',
@@ -17,6 +17,7 @@ setup(
             'dev-assistant=dev_assistant_client.main:run',
             'dev_assistant=dev_assistant_client.main:run',
             'dev-assistant-client=dev_assistant_client.main:run',
+            'dev_assistant_client=dev_assistant_client.main:run',
         ],
     },
 )
