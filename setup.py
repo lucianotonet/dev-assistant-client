@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='dev-assistant-client',
-    version='0.1.30',
+    version='0.1.31',
     url='https://github.com/lucianotonet/dev-assistant-client',
     author='Luciano Tonet',
     author_email='tonetlds@gmail.com',
@@ -14,9 +14,9 @@ setup(
     install_requires=required,
     entry_points={
         'console_scripts': [
-            'dev-assistant=dev_assistant_client.main:run',
-            'devassistant=dev_assistant_client.main:run',
-            'dev-assistant-client=dev_assistant_client.main:run',
+            'dev-assistant=dev-assistant-client.main:run',
+            'devassistant=dev-assistant-client.main:run',
+            'dev-assistant-client=dev-assistant-client.main:run',
         ],
     },
 )
