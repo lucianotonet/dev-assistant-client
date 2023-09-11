@@ -1,72 +1,79 @@
+import asyncio
 import getpass
-import http.client
 import json
-import os
 import logging
-from colorama import Fore, Style
-from .utils import ABLY_TOKEN_FILE, TOKEN_FILE, USER_DATA_FILE, APP_URL, API_PATH, DEVICE_ID, CERT_FILE, KEY_FILE, HEADERS, now
 
-CONN = http.client.HTTPSConnection(
-    APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
+import requests
+from dev_assistant_client.api_client import APIClient
+from ably import AblyRealtime
+from dev_assistant_client.io import IOAssistant
+from dev_assistant_client.utils import APP_URL, CERT_FILE, KEY_FILE, DEVICE_ID, dd, delete_token, read_token, save_token
+api_client = APIClient(APP_URL, CERT_FILE, KEY_FILE)
 
-
-def login(args):
-    email = input("Enter your email: ")
-    password = getpass.getpass("Enter your password: ")
-
-    payload = json.dumps({
-        'email': email,
-        'password': password,
-    })
-
-    CONN.request("POST", API_PATH + '/login', body=payload, headers=HEADERS)
-    response = CONN.getresponse()
-
-    if response.status == 200:
-        token = response.read().decode()
-        with open(TOKEN_FILE, "w") as f:
-            f.write(token)
+class Auth:
+    """
+    The Auth class handles authentication operations, including logging in,
+    logging out, and establishing a WebSocket connection with Ably.
+    """
+    
+    def login(self):
+        """
+        Prompts the user for email and password, and attempts to log in.
+        If successful, the received token is saved locally and returns True.
+        If login fails, returns False.
+        """
         
-        logging.info("Logged in.")
+        email = input("Enter your email: ") or "tonetlds@gmail.com"
+        password = getpass.getpass("Enter your password: ") or "password"
+        data = {"email": email, "password": password}
+     
+        response = api_client.post("/api/login", data=data)
+        
+        if response.status_code in [200, 201, 202, 204]:
+            token = response.json()["token"]
+            save_token(token)
+            return True
+        else:
+            print("Login failed. Please check your credentials and try again.")
+            return False
+        
+    def logout(self):
+        """
+        Logs out the user by deleting the locally stored token.
+        """
+        try:
+            delete_token()
+            print("Logged out successfully.")
+        except FileNotFoundError:
+            print("You aren't logged in.")
 
-        headers = {
-            'authorization': 'Bearer ' + token,
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        }
+    async def ably_connect(self):
+        """
+        Initiates a WebSocket connection using the Ably library.
+        Starts by getting an authentication token for Ably, then establishes a WebSocket connection,
+        and subscribes to a private channel to listen for messages.
+        """
+    
+        print("Initiating WebSocket connection...")
+        api_client.token = read_token()
+        api_client.headers["Authorization"] = f"Bearer {api_client.token}"
+        response = api_client.post("/api/ably-auth") # Get requestToken from server
+        token_request = json.loads(response.content)
 
-        # Request user data
-        CONN.request("GET", API_PATH + '/user', headers=headers)
-        response = CONN.getresponse()
+        try:
+            token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
+            response = requests.post(token_url, json=token_request) # Get token from Ably
+            token = response.json()["token"]
+            realtime = AblyRealtime(token=token)
+            print("WebSocket connection established")
+        except Exception as e:
+            logging.error("Websocket error:", e)
+            return
 
-        if response.status == 200:
-            user = json.loads(response.read().decode())
+        privateChannel = realtime.channels.get(f"private:dev-assistant-{DEVICE_ID}")
+        await privateChannel.subscribe(IOAssistant.process_message)
 
-            if 'name' in user:
-                with open(USER_DATA_FILE, "w") as f:
-                    json.dump(user, f)
-                logging.info("Hello, " + Fore.LIGHTCYAN_EX +
-                      user['name'] + Style.RESET_ALL + "!")
+        print("Ready!", "Waiting for instructions...")
 
-    else:
-        error = json.loads(response.read().decode())
-        logging.error("Error: " +
-              response.read().decode() + error.get('message'))
-        return
-
-def logout(args):
-    with open(TOKEN_FILE, "r") as f:
-        token = f.readline()
-
-    HEADERS['authorization'] = 'Bearer ' + token
-    CONN.request("POST", API_PATH + '/logout', headers=HEADERS)
-    response = CONN.getresponse()
-
-    if response.status == 200:
-        logging.info("You are now logged out")
-        logging.info("Bye!")
-    else:
-        logging.error("Failed to log out!")
-
-    os.remove(USER_DATA_FILE)
-    os.remove(TOKEN_FILE)
+        while True:
+            await asyncio.sleep(1)

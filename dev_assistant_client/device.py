@@ -1,17 +1,15 @@
 import os
-import http.client
 import json
 import logging
 import getpass
-import json
 import platform
 import socket
 import uuid
 import re
 from colorama import Fore, Style
-from .auth import CONN, HEADERS
-from .io import ably_connect
-from .utils import (
+from dev_assistant_client.api_client import APIClient
+from dev_assistant_client.auth import Auth
+from dev_assistant_client.utils import (
     CERT_FILE,
     DEVICE_ID_FILE,
     KEY_FILE,
@@ -19,11 +17,20 @@ from .utils import (
     APP_URL,
     API_PATH,
     DEVICE_ID,
+    dd,
     now,
+    read_token,
+    
 )
 
-
 def create_device_payload():
+    """
+    Creates a payload with information about the device, such as hostname, IP address,
+    MAC address, OS, Python version, etc.
+    Returns:
+        str: A JSON string representation of the device payload.
+    """
+    
     return json.dumps(
         {
             "id": DEVICE_ID or "",
@@ -40,53 +47,44 @@ def create_device_payload():
         indent=4,
     )
 
+api_client = APIClient(f"{APP_URL}/{API_PATH}", CERT_FILE, KEY_FILE)
 
-CONN = http.client.HTTPSConnection(APP_URL, cert_file=CERT_FILE, key_file=KEY_FILE)
-HEADERS = {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-}
-
-
-async def connect():
-    with open(TOKEN_FILE, "r") as f:
-        token = f.readline()
-
-    HEADERS["Authorization"] = "Bearer " + token
-
+async def connect_device():
+    """
+    Tries to connect the device to the server. It starts by reading a token, creates
+    a device payload and makes a POST call to the server. If the call is successful,
+    the device is connected and the device ID is saved locally. Then, it tries to establish
+    a WebSocket connection using the ably_connect() function from auth.py.
+    """
+    auth = Auth()
+    if not auth.login():
+        print("Login failed. Exiting...")
+        return
+    
+    token = read_token()
+    
     payload = create_device_payload()
-
     print(now(), "Connecting...", sep="\t")
 
-    CONN.request("POST", API_PATH + "/devices", body=payload, headers=HEADERS)
-    response = CONN.getresponse()
-
-    if response.status == 200 or response.status == 201:
-        response_body = response.read().decode()
-        device_data = json.loads(response_body)
-        print(
-            now(),
-            "Connected.",
-            "Device ID " + Fore.LIGHTYELLOW_EX + device_data["id"] + Style.RESET_ALL,
-            sep="\t",
-        )
+    api_client.headers["Authorization"] = "Bearer " + token
+    
+    response = api_client.post("/devices", data=payload)
+    
+    if response.status_code in [200, 201]:
+        print(now(),"Connected.","Device ID " + Fore.LIGHTYELLOW_EX + json.loads(response.content).get("id") + Style.RESET_ALL,sep="\t")
         with open(DEVICE_ID_FILE, "w") as f:
-            f.write(device_data["id"])
-        # Connect to Ably
-        await ably_connect()
+            f.write(json.loads(response.content).get("id"))
+        await Auth().ably_connect()
     else:
         print(now(), "Failed to connect!", sep="\t")
-        if response.status == 401:
-            print(now(), "Error: ", response.read().decode(), sep="\t")
+        if response.status_code == 401:
+            print(now(), "Error: ", json.loads(response.content).get('error'), sep="\t")
             print(now(), "Please do login again.", sep="\t")
             os.remove(TOKEN_FILE)
         else:
-            print(now(), "Response: ", response.read().decode(), sep="\t")
-            print(now(), "Status code: ", response.status, sep="\t")
-
+            print(now(), "Status code: ", response.status_code, sep="\t")
 
 def register(args):
-    """Registers the device"""
     logging.info("Registering device...")
 
     payload = json.dumps(
@@ -97,37 +95,30 @@ def register(args):
         }
     )
 
-    CONN.request("POST", API_PATH + "/devices", body=payload, headers=HEADERS)
-    response = CONN.getresponse()
+    response = api_client.post("/devices", data=payload)
 
     if response.status == 200:
         logging.info("Device registered")
     else:
         logging.error("Error: " + response.read().decode())
 
-
 def unregister(args):
-    """Unregisters the device"""
     logging.info("Unregistering device...")
 
-    CONN.request("DELETE", API_PATH + "/devices/" + str(DEVICE_ID), headers=HEADERS)
-    response = CONN.getresponse()
-
+    response = api_client.delete("/devices/" + str(DEVICE_ID))
+    
     if response.status == 200:
         logging.info("Device unregistered")
     else:
         logging.error("Error: " + response.read().decode())
 
-
 def list(args):
-    """Lists the devices"""
     logging.info("Listing devices...")
 
-    CONN.request("GET", API_PATH + "/devices", headers=HEADERS)
-    response = CONN.getresponse()
+    response = api_client.get("/devices")
 
     if response.status == 200:
-        devices = json.loads(response.read().decode())
+        devices = json.loads(response.read())
         logging.info("Devices:")
         for device in devices:
             logging.info(
@@ -140,3 +131,4 @@ def list(args):
             )
     else:
         logging.error("Error: " + response.read().decode())
+
