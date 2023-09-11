@@ -1,6 +1,7 @@
 import asyncio
 from ably import AblyRealtime
 from dev_assistant_client.config import api_client, json, requests, logging, DEVICE_ID
+from dev_assistant_client.io import IOAssistant
 from dev_assistant_client.utils import APP_URL, CERT_FILE, KEY_FILE, DEVICE_ID, dd, delete_token, read_token, save_token
 
 class AblyHandler:
@@ -53,3 +54,5 @@ class AblyHandler:
         Callback function for Ably messages.
         """
         print(f"Message received: {message.data}") # TODO: Implement message handling
+        
+        IOAssistant().process_message(message.data)
