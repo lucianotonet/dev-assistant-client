@@ -1,7 +1,0 @@
-ably
-colorama
-python-dotenv
-unidiff
-tabulate
-gitpython
-pytest
