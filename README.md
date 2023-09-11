@@ -40,14 +40,15 @@ The Dev Assistant Local Client is designed to streamline your development proces
 ## Usage
 
 Once installed, just run the following:
+
 ```bash
 dev-assistant
 ```
 
 You will be prompted to enter your email and password, if you're not already logged in. Once authenticated, the client will automatically establish a connection with the server.
 
+If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive _Device ID_, like this:
 
-If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive *Device ID*, like this:
 ```
 # dev-assistant
 
