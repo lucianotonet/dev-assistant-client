@@ -8,6 +8,7 @@ import uuid
 import re
 from colorama import Fore, Style
 from dev_assistant_client.api_client import APIClient
+from dev_assistant_client.ably_handler import AblyHandler
 from dev_assistant_client.auth import Auth
 from dev_assistant_client.utils import (
     CERT_FILE,
@@ -25,27 +26,23 @@ from dev_assistant_client.utils import (
 
 def create_device_payload():
     """
-    Creates a payload with information about the device, such as hostname, IP address,
-    MAC address, OS, Python version, etc.
-    Returns:
-        str: A JSON string representation of the device payload.
+    The function `create_device_payload` returns a dictionary containing information about the device,
+    such as its ID, name, type, IP address, MAC address, operating system, architecture, Python version,
+    and username.
+    :return: a dictionary containing information about a device.
     """
-    
-    return json.dumps(
-        {
-            "id": DEVICE_ID or "",
-            "name": socket.gethostname(),
-            "type": "desktop",
-            "ip_address": socket.gethostbyname(socket.gethostname()),
-            "mac_address": ":".join(re.findall("..", "%012x" % uuid.getnode())),
-            "os": platform.system(),
-            "os_version": platform.release(),
-            "architecture": platform.machine(),
-            "python_version": platform.python_version(),
-            "username": getpass.getuser(),
-        },
-        indent=4,
-    )
+    return {
+        "id": DEVICE_ID or "",
+        "name": socket.gethostname(),
+        "type": "desktop",
+        "ip_address": socket.gethostbyname(socket.gethostname()),
+        "mac_address": ":".join(re.findall("..", "%012x" % uuid.getnode())),
+        "os": platform.system(),
+        "os_version": platform.release(),
+        "architecture": platform.machine(),
+        "python_version": platform.python_version(),
+        "username": getpass.getuser(),
+    }
 
 api_client = APIClient(f"{APP_URL}/{API_PATH}", CERT_FILE, KEY_FILE)
 
@@ -74,7 +71,7 @@ async def connect_device():
         print(now(),"Connected.","Device ID " + Fore.LIGHTYELLOW_EX + json.loads(response.content).get("id") + Style.RESET_ALL,sep="\t")
         with open(DEVICE_ID_FILE, "w") as f:
             f.write(json.loads(response.content).get("id"))
-        await Auth().ably_connect()
+        await AblyHandler().ably_connect()
     else:
         print(now(), "Failed to connect!", sep="\t")
         if response.status_code == 401:
