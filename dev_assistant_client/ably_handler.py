@@ -49,7 +49,8 @@ class AblyHandler:
         print(now(), "Ready! Listening for instructions...", sep="\t")
               
         # Wait for messages
-        await asyncio.sleep(1000)
+        while True:
+            await asyncio.sleep(1)
         
     def ably_message(self, message):
         """
