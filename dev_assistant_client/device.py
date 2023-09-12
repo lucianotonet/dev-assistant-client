@@ -53,79 +53,30 @@ async def connect_device():
     the device is connected and the device ID is saved locally. Then, it tries to establish
     a WebSocket connection using the ably_connect() function from auth.py.
     """
-    auth = Auth()
-    if not auth.login():
-        print("Login failed. Exiting...")
-        return
-    
     token = read_token()
     
     payload = create_device_payload()
-    print(now(), "Connecting...", sep="\t")
+    print(now(), "Device ID: \t", Fore.LIGHTYELLOW_EX + DEVICE_ID + Style.RESET_ALL, sep="\t")
+    print(now(), "Connecting device...", sep="\t", end="\t")
 
     api_client.headers["Authorization"] = "Bearer " + token
     
     response = api_client.post("/devices", data=payload)
     
     if response.status_code in [200, 201]:
-        print(now(),"Connected.","Device ID " + Fore.LIGHTYELLOW_EX + json.loads(response.content).get("id") + Style.RESET_ALL,sep="\t")
+        print(Fore.LIGHTGREEN_EX + "Connected" + Style.RESET_ALL, sep="\t")
         with open(DEVICE_ID_FILE, "w") as f:
             f.write(json.loads(response.content).get("id"))
+        if json.loads(response.content).get("id") != DEVICE_ID:
+            print(now(), Fore.LIGHTYELLOW_EX + "Warning: " + Style.RESET_ALL, "Device ID has changed. Please update where it is needed.")
+            print(now(), "New device ID: ", Fore.LIGHTYELLOW_EX + json.loads(response.content).get("id") + Style.RESET_ALL, sep="\t")
         await AblyHandler().ably_connect()
     else:
-        print(now(), "Failed to connect!", sep="\t")
+        print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL, sep="\t")
         if response.status_code == 401:
-            print(now(), "Error: ", json.loads(response.content).get('error'), sep="\t")
-            print(now(), "Please do login again.", sep="\t")
+            print( Fore.LIGHTRED_EX + "Error: " + Style.RESET_ALL, json.loads(response.content).get('error'), sep="\t")
+            print( Fore.LIGHTRED_EX + "Please do login again." + Style.RESET_ALL, sep="\t")
             os.remove(TOKEN_FILE)
         else:
             print(now(), "Status code: ", response.status_code, sep="\t")
-
-def register(args):
-    logging.info("Registering device...")
-
-    payload = json.dumps(
-        {
-            "device_id": DEVICE_ID,
-            "name": args.get("name"),
-            "description": args.get("description"),
-        }
-    )
-
-    response = api_client.post("/devices", data=payload)
-
-    if response.status == 200:
-        logging.info("Device registered")
-    else:
-        logging.error("Error: " + response.read().decode())
-
-def unregister(args):
-    logging.info("Unregistering device...")
-
-    response = api_client.delete("/devices/" + str(DEVICE_ID))
-    
-    if response.status == 200:
-        logging.info("Device unregistered")
-    else:
-        logging.error("Error: " + response.read().decode())
-
-def list(args):
-    logging.info("Listing devices...")
-
-    response = api_client.get("/devices")
-
-    if response.status == 200:
-        devices = json.loads(response.read())
-        logging.info("Devices:")
-        for device in devices:
-            logging.info(
-                Fore.LIGHTCYAN_EX
-                + device.get("name")
-                + Style.RESET_ALL
-                + " ("
-                + device.get("device_id")
-                + ")"
-            )
-    else:
-        logging.error("Error: " + response.read().decode())
-
+            print(now(), "Response: ", response.content, sep="\t")

@@ -1,3 +1,4 @@
+from colorama import Fore, Style
 from dev_assistant_client.config import api_client, getpass
 from dev_assistant_client.utils import delete_token, save_token
 
@@ -25,7 +26,7 @@ class Auth:
             save_token(token)
             return True
         else:
-            print("Login failed. Please check your credentials and try again.")
+            print(Fore.LIGHTRED_EX + "Login failed. Please check your credentials and try again." + Style.RESET_ALL)
             return False
         
     def logout(self):

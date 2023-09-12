@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from colorama import Fore, Style
 from .auth import Auth
 from .device import connect_device
-from .utils import APP_URL, read_token
+from .utils import APP_URL, dd, read_token
 
 import pkg_resources
 
@@ -33,7 +33,8 @@ class DevAssistant:
 
     def run(self, args=None):
         token = read_token()
-        if not token:
+
+        if token is None:
             self.auth.login()
             
         # Parse command line arguments
