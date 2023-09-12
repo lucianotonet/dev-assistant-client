@@ -42,7 +42,7 @@ class AblyHandler:
             print(Fore.LIGHTRED_EX + "Failed to connect to private channel." + Style.RESET_ALL)
             return
 
-        print(Fore.LIGHTGREEN_EX + "Connected." + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "Connected" + Style.RESET_ALL)
 
         # Subscribe to the channel
         await privateChannel.subscribe(self.ably_message)

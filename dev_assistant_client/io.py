@@ -54,14 +54,14 @@ class IOAssistant:
                 sleep(0.5)
             else:
                 return response
-        print(Fore.LIGHTGREEN_EX + "Done." + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "✓ done " + Style.RESET_ALL)
         return response
 
     @staticmethod
     def process_message(message):
         print(
             now(),
-            "Receiving task ...",
+            "Receiving request ...",
             message.data.get("feedback"),
             sep="\t",
         )
@@ -88,7 +88,7 @@ class IOAssistant:
             
     @staticmethod
     def set_as_read(instruction):
-        print(now(), "Marking as received ...", sep="\t", end="\t")
+        print(now(), "Setting as received ...", sep="\t", end="\t")
         
         url = f'/devices/{DEVICE_ID}/io/{instruction.get("id")}'
 
@@ -111,14 +111,14 @@ class IOAssistant:
                 sleep(1)
             else:
                 return
-        print(Fore.LIGHTGREEN_EX + "Done." + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "✓ done " + Style.RESET_ALL)
         return
 
     @staticmethod
     def send_response(instruction, data):
         print(
             now(),
-            "Returning task response ... ",
+            "Returning response ... ",
             sep="\t",
             end="\t",
         )
@@ -142,5 +142,5 @@ class IOAssistant:
                 sleep(0.5)
             else:
                 return
-        print(Fore.LIGHTGREEN_EX + "Done. " + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "✓ done  " + Style.RESET_ALL)
         return
