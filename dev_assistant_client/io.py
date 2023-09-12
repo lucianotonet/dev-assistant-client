@@ -54,7 +54,7 @@ class IOAssistant:
                 sleep(0.5)
             else:
                 return response
-        print(Fore.LIGHTGREEN_EX + "✓ done " + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
         return response
 
     @staticmethod
@@ -111,7 +111,7 @@ class IOAssistant:
                 sleep(1)
             else:
                 return
-        print(Fore.LIGHTGREEN_EX + "✓ done " + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
         return
 
     @staticmethod
@@ -142,5 +142,5 @@ class IOAssistant:
                 sleep(0.5)
             else:
                 return
-        print(Fore.LIGHTGREEN_EX + "✓ done  " + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + "Done ✓ " + Style.RESET_ALL)
         return
