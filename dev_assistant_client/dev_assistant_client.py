@@ -4,9 +4,9 @@ import time
 
 from dotenv import load_dotenv
 from colorama import Fore, Style
-from .auth import Auth
-from .device import connect_device
-from .utils import APP_URL, dd, read_token
+from dev_assistant_client.auth import Auth
+from dev_assistant_client.device import connect_device
+from dev_assistant_client.utils import APP_URL, dd, read_token
 
 import pkg_resources
 
@@ -28,7 +28,7 @@ class DevAssistant:
         ''' + Style.RESET_ALL)
 
     def cli(self):
-        from .cli import cli
+        from dev_assistant_client.cli import cli
         cli()
 
     def run(self, args=None):
@@ -55,3 +55,4 @@ class DevAssistant:
             
 if __name__ == "__main__":
     DevAssistant().run()
+

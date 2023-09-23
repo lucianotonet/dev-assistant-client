@@ -1,1 +1,1 @@
-from .cli import cli
+from dev_assistant_client.cli import cli
