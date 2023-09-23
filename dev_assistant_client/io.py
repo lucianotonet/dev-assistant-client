@@ -8,6 +8,7 @@ from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.modules.files import FilesModule
 from dev_assistant_client.modules.git import GitModule
 from dev_assistant_client.modules.terminal import TerminalModule
+from dev_assistant_client.modules.interpreter import InterpreterModule
 from dev_assistant_client.utils import CERT_FILE, HEADERS, API_PATH, APP_URL, DEVICE_ID, KEY_FILE, now, read_token
 
 api_client = APIClient(f"{APP_URL}/{API_PATH}", CERT_FILE, KEY_FILE)
@@ -42,6 +43,8 @@ class IOAssistant:
                     response = GitModule().execute(operation, args)
                 elif module == "terminal":
                     response = TerminalModule().execute(operation, args)
+                elif module == "interpreter":
+                    response = InterpreterModule().execute(operation, args)
                 else:
                     response = "Invalid module or operation"
                 break
