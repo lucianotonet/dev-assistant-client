@@ -1,16 +1,18 @@
 import asyncio
+import json
+import requests
 from ably import AblyRealtime
 from colorama import Fore, Style
-from dev_assistant_client.config import api_client, json, requests
+from dev_assistant_client.config import api_client
 from dev_assistant_client.io import IOAssistant
-from dev_assistant_client.utils import APP_URL, CERT_FILE, KEY_FILE, get_device_id, dd, delete_token, now, read_token, save_token
+from dev_assistant_client.utils import DEVICE_ID, dd, now, read_token
 
 class AblyHandler:
     def init_ably(self):
         try:
             api_client.token = read_token()
             api_client.headers["Authorization"] = f"Bearer {api_client.token}"
-            response = api_client.post("/api/token-request", data={"deviceId": get_device_id()})
+            response = api_client.get(f"/api/ably/token-request?device_id={DEVICE_ID}")
             token_request = json.loads(response.content)
 
             token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
@@ -18,28 +20,31 @@ class AblyHandler:
             token = response.json()["token"]
             realtime = AblyRealtime(token=token)
         except Exception as e:
+            dd(e)
             return None
 
         return realtime
 
     async def ably_connect(self):
-        print(now(), "Connecting websocket...", sep="\t", end="\t")
+        print(now(), "WebSockets...\t", sep="\t", end="\t")
         realtime = self.init_ably()
-
         if realtime is None:
-            print(Fore.LIGHTRED_EX + "Failed to connect to Ably." + Style.RESET_ALL)
+            print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
             return
+        
+        print(Fore.LIGHTGREEN_EX + "Connected!" + Style.RESET_ALL)
 
-        privateChannel = realtime.channels.get(f"private:dev-assistant-python-{get_device_id()}")
-
+        
+        print(now(), "Private channel...", sep="\t", end="\t")
+        privateChannel = realtime.channels.get(f"private:dev-assistant-python-{DEVICE_ID}")
         if privateChannel is None:
-            print(Fore.LIGHTRED_EX + "Failed to connect to private channel." + Style.RESET_ALL)
+            print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
             return
-
-        print(Fore.LIGHTGREEN_EX + "Connected" + Style.RESET_ALL)
+        
+        print(Fore.LIGHTGREEN_EX + "Connected!" + Style.RESET_ALL)
 
         await privateChannel.subscribe(self.ably_message)
-        print(now(), "Ready! Listening for instructions...", sep="\t")
+        print(now(), "Ready!", "Listening for instructions...", sep="\t")
               
         while True:
             await asyncio.sleep(1)

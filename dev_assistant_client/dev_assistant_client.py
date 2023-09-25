@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from colorama import Fore, Style
 from dev_assistant_client.auth import Auth
 from dev_assistant_client.device import connect_device
-from dev_assistant_client.utils import APP_URL, dd, read_token
+from dev_assistant_client.utils import APP_URL, read_token
 
 import pkg_resources
 

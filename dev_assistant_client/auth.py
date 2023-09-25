@@ -1,5 +1,6 @@
 from colorama import Fore, Style
-from dev_assistant_client.config import api_client, getpass
+import getpass
+from dev_assistant_client.config import api_client
 from dev_assistant_client.utils import delete_token, save_token
 import webbrowser
 

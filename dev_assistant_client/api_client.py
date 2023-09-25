@@ -2,8 +2,6 @@ import requests
 import json
 from urllib.parse import urlparse
 
-from dev_assistant_client.utils import dd
-
 class APIClient:
     def __init__(self, base_url, cert_file=None, key_file=None, token=None):
         parsed_url = urlparse(base_url)

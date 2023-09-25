@@ -1,6 +1,5 @@
 import os
 import json
-import logging
 import getpass
 import platform
 import socket
@@ -9,16 +8,13 @@ import re
 from colorama import Fore, Style
 from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.ably_handler import AblyHandler
-from dev_assistant_client.auth import Auth
 from dev_assistant_client.utils import (
     CERT_FILE,
     DEVICE_ID_FILE,
     KEY_FILE,
     TOKEN_FILE,
-    APP_URL,
-    API_PATH,
     DEVICE_ID,
-    dd,
+    API_URL,
     now,
     read_token,
     
@@ -44,7 +40,7 @@ def create_device_payload():
         "username": getpass.getuser(),
     }
 
-api_client = APIClient(f"{APP_URL}/{API_PATH}", CERT_FILE, KEY_FILE)
+api_client = APIClient(f"{API_URL}", CERT_FILE, KEY_FILE)
 
 async def connect_device():
     """
@@ -53,23 +49,22 @@ async def connect_device():
     the device is connected and the device ID is saved locally. Then, it tries to establish
     a WebSocket connection using the ably_connect() function from auth.py.
     """
-    token = read_token()
+    print(now(), "Connecting...\t", sep="\t", end="\t")
     
+    token = read_token()
     payload = create_device_payload()
-    print(now(), "Device ID: \t", Fore.LIGHTYELLOW_EX + DEVICE_ID + Style.RESET_ALL, sep="\t")
-    print(now(), "Connecting device...", sep="\t", end="\t")
 
     api_client.headers["Authorization"] = "Bearer " + token
-    
     response = api_client.post("/devices", data=payload)
     
+    device_id = json.loads(response.content).get("id")
+    
     if response.status_code in [200, 201]:
-        print(Fore.LIGHTGREEN_EX + "Connected" + Style.RESET_ALL, sep="\t")
+        print(Fore.LIGHTGREEN_EX + "Connected!" + Style.RESET_ALL, sep="\t")
         with open(DEVICE_ID_FILE, "w") as f:
-            f.write(json.loads(response.content).get("id"))
-        if json.loads(response.content).get("id") != DEVICE_ID:
-            print(now(), Fore.LIGHTYELLOW_EX + "Warning: " + Style.RESET_ALL, "Device ID has changed. Please update where it is needed.")
-            print(now(), "New device ID: ", Fore.LIGHTYELLOW_EX + json.loads(response.content).get("id") + Style.RESET_ALL, sep="\t")
+            f.write(device_id)
+
+        print(now(), "Device ID: \t", Fore.LIGHTYELLOW_EX + device_id + Style.RESET_ALL, sep="\t")
         await AblyHandler().ably_connect()
     else:
         print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL, sep="\t")
