@@ -2,13 +2,14 @@ from datetime import datetime
 import json
 import os
 import sys
+import uuid
 from pathlib import Path
 from colorama import Fore, Style
 from dotenv import load_dotenv
 
-# Defining the exclusive directory for dot files
+# Define the exclusive directory for dot files
 DOTFILES_DIR = Path.home() / ".dev-assistant-client"
-DOTFILES_DIR.mkdir(mode=777, parents=True, exist_ok=True)
+DOTFILES_DIR.mkdir(mode=775, parents=True, exist_ok=True)
 
 load_dotenv()
 
@@ -20,26 +21,31 @@ USER_DATA_FILE = DOTFILES_DIR / "user"
 ABLY_TOKEN_FILE = DOTFILES_DIR / "ably_token"
 DEVICE_ID_FILE = DOTFILES_DIR / "device_id"
 
-# if is set in the env file, use it, otherwise use none
+# If set in the env file, use it, otherwise use none
 CERT_FILE = os.getenv("CERT_FILE", "")
 KEY_FILE = os.getenv("KEY_FILE", "")
 
 def dd(*args):
     """
-    Just like the 'dump and die' function from Laravel
+    Function similar to 'dump and die' from Laravel
     """
     for arg in args:
         print(arg)
     sys.exit(1)
 
+
+# Retrieve the machine's hardware address as the device id
 def get_device_id():
     try:
         return DEVICE_ID_FILE.read_text()
     except FileNotFoundError:
-        return None
-
-
-DEVICE_ID = get_device_id()
+        # If the device id file does not exist, generate one with the machine's hardware address
+        DEVICE_ID = str(uuid.getnode())
+        with open(DEVICE_ID_FILE, "w") as f:
+            f.write(DEVICE_ID)
+        return DEVICE_ID
+    
+    
 HEADERS = {
     "Accept": "application/json",
     "Content-Type": "application/json",
@@ -63,7 +69,7 @@ def print_json(request):
 
 
 def now():
-    # return just the date and time in a string format
+    # Return just the date and time in a string format
     now = datetime.now()
     # return Fore.WHITE + now.strftime("%d/%m/%Y %H:%M:%S") + Style.RESET_ALL
     return Fore.WHITE + ">" + Style.RESET_ALL

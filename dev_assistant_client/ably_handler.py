@@ -1,16 +1,16 @@
 import asyncio
 from ably import AblyRealtime
 from colorama import Fore, Style
-from dev_assistant_client.config import api_client, json, requests, logging, DEVICE_ID
+from dev_assistant_client.config import api_client, json, requests
 from dev_assistant_client.io import IOAssistant
-from dev_assistant_client.utils import APP_URL, CERT_FILE, KEY_FILE, DEVICE_ID, dd, delete_token, now, read_token, save_token
+from dev_assistant_client.utils import APP_URL, CERT_FILE, KEY_FILE, get_device_id, dd, delete_token, now, read_token, save_token
 
 class AblyHandler:
     def init_ably(self):
         try:
             api_client.token = read_token()
             api_client.headers["Authorization"] = f"Bearer {api_client.token}"
-            response = api_client.post("/api/ably-auth")
+            response = api_client.post("/api/token-request", data={"deviceId": get_device_id()})
             token_request = json.loads(response.content)
 
             token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
@@ -30,7 +30,7 @@ class AblyHandler:
             print(Fore.LIGHTRED_EX + "Failed to connect to Ably." + Style.RESET_ALL)
             return
 
-        privateChannel = realtime.channels.get(f"private:dev-assistant-python-{DEVICE_ID}")
+        privateChannel = realtime.channels.get(f"private:dev-assistant-python-{get_device_id()}")
 
         if privateChannel is None:
             print(Fore.LIGHTRED_EX + "Failed to connect to private channel." + Style.RESET_ALL)
