@@ -10,50 +10,39 @@ class AblyHandler:
         try:
             api_client.token = read_token()
             api_client.headers["Authorization"] = f"Bearer {api_client.token}"
-            response = api_client.post("/api/ably-auth") # Get requestToken from server
+            response = api_client.post("/api/ably-auth")
             token_request = json.loads(response.content)
 
             token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
-            response = requests.post(token_url, json=token_request) # Get token from Ably
+            response = requests.post(token_url, json=token_request)
             token = response.json()["token"]
             realtime = AblyRealtime(token=token)
         except Exception as e:
-            logging.error("Websocket error:", e)
             return None
 
         return realtime
 
     async def ably_connect(self):
         print(now(), "Connecting websocket...", sep="\t", end="\t")
-        
-        # Initiate Ably connection
         realtime = self.init_ably()
 
-        # Check if the connection was successful before proceeding
         if realtime is None:
             print(Fore.LIGHTRED_EX + "Failed to connect to Ably." + Style.RESET_ALL)
             return
 
-        # Get the private channel for the device
-        privateChannel = realtime.channels.get(f"private:dev-assistant-{DEVICE_ID}")
+        privateChannel = realtime.channels.get(f"private:dev-assistant-python-{DEVICE_ID}")
 
-        # Check if the channel was successfully retrieved
         if privateChannel is None:
             print(Fore.LIGHTRED_EX + "Failed to connect to private channel." + Style.RESET_ALL)
             return
 
         print(Fore.LIGHTGREEN_EX + "Connected" + Style.RESET_ALL)
 
-        # Subscribe to the channel
         await privateChannel.subscribe(self.ably_message)
         print(now(), "Ready! Listening for instructions...", sep="\t")
               
-        # Wait for messages
         while True:
             await asyncio.sleep(1)
         
     def ably_message(self, message):
-        """
-        Callback function for Ably messages.
-        """        
         IOAssistant.process_message(message)
