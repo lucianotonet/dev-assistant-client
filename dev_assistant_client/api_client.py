@@ -28,7 +28,8 @@ class APIClient:
         url = self.base_url + endpoint
         payload = json.dumps(data) if data else None
         
-        response = requests.request(method, url, data=payload, headers=self.headers, cert=(self.cert_file, self.key_file))
+        cert = (self.cert_file, self.key_file) if self.cert_file and self.key_file else None
+        response = requests.request(method, url, data=payload, headers=self.headers, cert=cert)
         
         return response        
             

@@ -5,14 +5,14 @@ from ably import AblyRealtime
 from colorama import Fore, Style
 from dev_assistant_client.config import api_client
 from dev_assistant_client.io import IOAssistant
-from dev_assistant_client.utils import DEVICE_ID, dd, now, read_token
+from dev_assistant_client.utils import CLIENT_ID, dd, now, read_token
 
 class AblyHandler:
     def init_ably(self):
         try:
             api_client.token = read_token()
             api_client.headers["Authorization"] = f"Bearer {api_client.token}"
-            response = api_client.get(f"/api/ably/token-request?device_id={DEVICE_ID}")
+            response = api_client.get(f"/api/ably/token-request?client_id={CLIENT_ID}")
             token_request = json.loads(response.content)
 
             token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
@@ -36,7 +36,7 @@ class AblyHandler:
 
         
         print(now(), "Private channel...", sep="\t", end="\t")
-        privateChannel = realtime.channels.get(f"private:dev-assistant-python-{DEVICE_ID}")
+        privateChannel = realtime.channels.get(f"private:dev-assistant-{CLIENT_ID}")
         if privateChannel is None:
             print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL)
             return

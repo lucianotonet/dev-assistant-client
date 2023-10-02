@@ -19,11 +19,11 @@ APP_URL = os.getenv("APP_URL", "https://devassistant.tonet.dev")
 API_PATH = os.getenv("API_PATH", "api")
 API_URL = f"{APP_URL}/{API_PATH}"
 
-# Define file paths for token, user data, ably token and device id
+# Define file paths for token, user data, ably token and client id
 TOKEN_FILE = DOTFILES_DIR / "auth_token"
 USER_DATA_FILE = DOTFILES_DIR / "user_data"
 ABLY_TOKEN_FILE = DOTFILES_DIR / "ably_token"
-DEVICE_ID_FILE = DOTFILES_DIR / "device_id"
+CLIENT_ID_FILE = DOTFILES_DIR / "client_id"
 
 # Get certificate file and key file paths from environment variables
 CERT_FILE = os.getenv("CERT_FILE", "")
@@ -38,21 +38,21 @@ def dd(*args):
         print(arg)
     sys.exit(1)
 
-# Function to get the device id
-def get_device_id():
+# Function to get the client id
+def get_client_id():
     try:
-        # Try to read the device id from the file
-        return DEVICE_ID_FILE.read_text()
+        # Try to read the client id from the file
+        return CLIENT_ID_FILE.read_text()
     except FileNotFoundError:
-        # If the file does not exist, generate a new device id
-        device_id = str(uuid.uuid4())
-        # Save the device id to the file
-        DEVICE_ID_FILE.write_text(device_id)
-        # Return the device id
-        return device_id
+        # If the file does not exist, generate a new client id
+        client_id = str(uuid.uuid4())
+        # Save the client id to the file
+        CLIENT_ID_FILE.write_text(client_id)
+        # Return the client id
+        return client_id
 
-# Get the device id
-DEVICE_ID = get_device_id()
+# Get the client id
+CLIENT_ID = get_client_id()
     
 # Define headers for API requests
 HEADERS = {

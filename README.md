@@ -4,9 +4,9 @@ Welcome to the [Dev Assistant](https://devassistant.tonet.dev) plugin for ChatGP
 
 ## What is it?
 
-[Dev Assistant](https://devassistant.tonet.dev) is a plugin for ChatGPT that assists us developers by executing tasks directly on our devices.
+[Dev Assistant](https://devassistant.tonet.dev) is a plugin for ChatGPT that assists us developers by executing tasks directly on our clients.
 
-Dev Assistant Client (this repo) is a Python package that is basically the core component of the project. It receives instructions from ChatGPT via Dev Assistant plugin, executes it on any of your devices and send the response back.
+Dev Assistant Client (this repo) is a Python package that is basically the core component of the project. It receives instructions from ChatGPT via Dev Assistant plugin, executes it on any of your clients and send the response back.
 
 ## Features
 
@@ -47,7 +47,7 @@ dev-assistant
 
 You will be prompted to enter your email and password, if you're not already logged in. Once authenticated, the client will automatically establish a connection with the server.
 
-If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive _Device ID_, like this:
+If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive _CLIENT ID_, like this:
 
 ```
 # dev-assistant
@@ -57,11 +57,11 @@ If everything runs well, you will see the Dev Assistant CLI presentation and a e
     '-----'   https://devassistant.tonet.dev
 
 31/07/2023 00:43:19     Connecting...
-31/07/2023 00:43:20     Connected.      Device ID 654c5jf7-7993-4b44-ae92-ec51t88339cd
+31/07/2023 00:43:20     Connected.      CLIENT ID 654c5jf7-7993-4b44-ae92-ec51t88339cd
 ...
 ```
 
-You can now ask ChatGPT to help you directly on that device.
+You can now ask ChatGPT to help you directly on that client.
 
 You can do `CRTL+C` to stop the client at any time.
 
