@@ -18,7 +18,8 @@ class APIClient:
             "User-Agent": "DevAssistantClient/0.2",
             "Authorization": f"Bearer {self.token}" if self.token else None
         }
-        self.verify = False if os.environ.get("APP_ENV").lower() == "development" else True
+        app_env = os.environ.get("APP_ENV")
+        self.verify = False if app_env and app_env.lower() == "development" else True
     
     def _make_request(self, method, endpoint, data=None):
         
