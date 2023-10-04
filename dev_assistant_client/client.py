@@ -6,6 +6,7 @@ import socket
 import uuid
 import re
 from colorama import Fore, Style
+from dev_assistant_client.client_auth import ClientAuth
 from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.ably_handler import AblyHandler
 from dev_assistant_client.utils import (
@@ -65,8 +66,11 @@ async def connect_client():
         print(Fore.LIGHTRED_EX + "Failed to connect!" + Style.RESET_ALL, sep="\t")
         if response.status_code == 401:
             print( Fore.LIGHTRED_EX + "Error: " + Style.RESET_ALL, json.loads(response.content).get('error'), sep="\t")
-            print( Fore.LIGHTRED_EX + "Please do login again." + Style.RESET_ALL, sep="\t")
+            print( Fore.LIGHTRED_EX + "Please log in again." + Style.RESET_ALL, sep="\t")
             os.remove(TOKEN_FILE)
+            
+            # authenticate client again
+            ClientAuth.authenticate()            
         else:
             print(now(), "Status code: ", response.status_code, sep="\t")
             print(now(), "Response: ", response.content, sep="\t")
