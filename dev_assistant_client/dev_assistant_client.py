@@ -4,8 +4,8 @@ import time
 
 from dotenv import load_dotenv
 from colorama import Fore, Style
-from dev_assistant_client.auth import Auth
 from dev_assistant_client.client import connect_client
+from dev_assistant_client.client_auth import ClientAuth
 from dev_assistant_client.utils import APP_URL, read_token
 
 import pkg_resources
@@ -15,7 +15,7 @@ load_dotenv()
 class DevAssistant:
     
     def __init__(self):
-        self.auth = Auth()
+        self.auth = ClientAuth()
         self.package_version = pkg_resources.get_distribution("dev-assistant-client").version
         self.print_header()
 
@@ -35,14 +35,14 @@ class DevAssistant:
         token = read_token()
 
         if token is None:
-            self.auth.login()
+            self.auth.authenticate()
             
         # Parse command line arguments
         parser = argparse.ArgumentParser(prog='dev-assistant-client')
         subparsers = parser.add_subparsers()
 
         parser_logout = subparsers.add_parser('close')
-        parser_logout.set_defaults(func=self.auth.logout)
+        parser_logout.set_defaults(func=self.auth.deauthenticate)
                 
         try:
             loop = asyncio.get_event_loop()

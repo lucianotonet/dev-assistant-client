@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 from urllib.parse import urlparse
@@ -17,6 +18,7 @@ class APIClient:
             "User-Agent": "DevAssistantClient/0.2",
             "Authorization": f"Bearer {self.token}" if self.token else None
         }
+        self.verify = os.environ.get('APP_ENV') == 'production'
     
     def _make_request(self, method, endpoint, data=None):
         
@@ -29,7 +31,7 @@ class APIClient:
         payload = json.dumps(data) if data else None
         
         cert = (self.cert_file, self.key_file) if self.cert_file and self.key_file else None
-        response = requests.request(method, url, data=payload, headers=self.headers, cert=cert)
+        response = requests.request(method, url, data=payload, headers=self.headers, cert=cert, verify=self.verify)
         
         return response        
             
