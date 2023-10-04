@@ -12,7 +12,7 @@ class AblyHandler:
         try:
             api_client.token = read_token()
             api_client.headers["Authorization"] = f"Bearer {api_client.token}"
-            response = api_client.get(f"/api/ably/token-request?client_id={CLIENT_ID}")
+            response = api_client.get(f"/auth/{CLIENT_ID}/ably")
             token_request = json.loads(response.content)
 
             token_url = f'https://rest.ably.io/keys/{token_request["keyName"]}/requestToken'
