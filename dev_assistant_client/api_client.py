@@ -18,7 +18,7 @@ class APIClient:
             "User-Agent": "DevAssistantClient/0.2",
             "Authorization": f"Bearer {self.token}" if self.token else None
         }
-        self.verify = False
+        self.verify = True
     
     def _make_request(self, method, endpoint, data=None):
         
