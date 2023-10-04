@@ -1,7 +1,7 @@
 import os
 from colorama import Fore, Style
 from dev_assistant_client.config import api_client
-from dev_assistant_client.utils import save_token, delete_token, get_client_id
+from dev_assistant_client.utils import save_token, delete_token, get_client_id, APP_URL
 import webbrowser
 
 class ClientAuth:
@@ -18,7 +18,7 @@ class ClientAuth:
         print("\nOpening authentication page in browser...")
         
         # Determine the URL based on environment
-        base_url = 'https://devassistant.tonet.dev' if os.environ.get('APP_ENV') == 'production' else os.environ.get('APP_URL', 'https://dev-assistant-server.test')
+        base_url = APP_URL
         
         # current client id
         client_id = get_client_id()
