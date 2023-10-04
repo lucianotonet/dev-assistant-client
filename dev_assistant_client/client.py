@@ -70,7 +70,8 @@ async def connect_client():
             os.remove(TOKEN_FILE)
             
             # authenticate client again
-            ClientAuth.authenticate()            
+            client_auth = ClientAuth()
+            client_auth.authenticate()            
         else:
             print(now(), "Status code: ", response.status_code, sep="\t")
             print(now(), "Response: ", response.content, sep="\t")
