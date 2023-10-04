@@ -1,5 +1,6 @@
 import argparse
 import os
+from colorama import Fore, Style
 from dotenv import load_dotenv
 import requests
 from packaging import version
@@ -34,9 +35,7 @@ def cli():
     
     try:
         if check_for_update():
-            print(
-                "A new version is available. Please run 'pip install --upgrade dev-assistant-client'."
-            )
+            print(Fore.LIGHTYELLOW_EX + "📦 New version available! "  + Style.RESET_ALL + "\nPlease run 'pip install --upgrade dev-assistant-client' to upgrade." )
     except:
         # Fine if this fails
         DevAssistant().run()
