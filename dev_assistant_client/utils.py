@@ -7,10 +7,6 @@ from pathlib import Path
 from colorama import Fore, Style
 from dotenv import load_dotenv
 
-# Define the exclusive directory for dot files
-DOTFILES_DIR = Path.home() / ".dev-assistant-client"
-DOTFILES_DIR.mkdir(mode=775, parents=True, exist_ok=True)
-
 # Load environment variables from .env file
 load_dotenv()
 
@@ -18,6 +14,10 @@ load_dotenv()
 APP_URL = os.getenv("APP_URL", "https://devassistant.tonet.dev")
 API_PATH = os.getenv("API_PATH", "api")
 API_URL = f"{APP_URL}/{API_PATH}"
+
+# Define the exclusive directory for dot files
+DOTFILES_DIR = Path.home() / ".dev-assistant" if APP_URL == "https://devassistant.tonet.dev" else Path.home() / ".dev-assistant-test"
+DOTFILES_DIR.mkdir(mode=775, parents=True, exist_ok=True)
 
 # Define file paths for token, user data, ably token and client id
 TOKEN_FILE = DOTFILES_DIR / "auth_token"
@@ -58,7 +58,7 @@ CLIENT_ID = get_client_id()
 HEADERS = {
     "Accept": "application/json",
     "Content-Type": "application/json",
-    "User-Agent": "DevAssistant/0.2",
+    "User-Agent": "DevAssistantCLI/0.0.2",
 }
 
 # Function to flatten a dictionary

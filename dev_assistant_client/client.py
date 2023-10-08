@@ -1,10 +1,7 @@
 import os
 import json
-import getpass
-import platform
+import asyncio
 import socket
-import uuid
-import re
 from colorama import Fore, Style
 from dev_assistant_client.client_auth import ClientAuth
 from dev_assistant_client.api_client import APIClient
@@ -17,23 +14,8 @@ from dev_assistant_client.utils import (
     CLIENT_ID,
     API_URL,
     now,
-    read_token,
-    
+    read_token,   
 )
-
-def create_client_payload():
-    """
-    The function `create_client_payload` returns a dictionary containing information about the client,
-    such as its ID, name, type, IP address, MAC address, operating system, architecture, Python version,
-    and username.
-    :return: a dictionary containing information about a client.
-    """
-    return {
-        "id": CLIENT_ID or "",
-        "name": socket.gethostname(),
-        "type": "python",
-        "ip_address": socket.gethostbyname(socket.gethostname())        
-    }
 
 api_client = APIClient(f"{API_URL}", CERT_FILE, KEY_FILE)
 
@@ -47,7 +29,11 @@ async def connect_client():
     print(now(), "Connecting...\t", sep="\t", end="\t")
     
     token = read_token()
-    payload = create_client_payload()
+    payload = {
+        "id": CLIENT_ID or "",
+        "name": socket.gethostname(),
+        "type": "cli",
+    }
 
     if token is not None:
         api_client.headers["Authorization"] = "Bearer " + token
@@ -71,7 +57,10 @@ async def connect_client():
             
             # authenticate client again
             client_auth = ClientAuth()
-            client_auth.authenticate()            
+            if client_auth.authenticate():
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(connect_client())            
+
         else:
             print(now(), "Status code: ", response.status_code, sep="\t")
             print(now(), "Response: ", response.content, sep="\t")

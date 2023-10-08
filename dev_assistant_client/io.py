@@ -64,8 +64,9 @@ class IOAssistant:
             message.data.get("feedback"),
             sep="\t",
         )
+        
         instruction = message.data
-
+        
         try:
             IOAssistant.set_as_read(instruction)
         except Exception as e:

@@ -28,9 +28,11 @@ class ClientAuth:
         
         if token:
             save_token(token)
-            print(Fore.LIGHTGREEN_EX + "Authentication successful." + Style.RESET_ALL)
+            print(Fore.LIGHTGREEN_EX + "Authenticated successfully!" + Style.RESET_ALL)
+            return True
         else:
-            print(Fore.LIGHTRED_EX + "Authentication failed. Please retrieve the token from the browser and try again." + Style.RESET_ALL)
+            print(Fore.LIGHTRED_EX + "Authentication failed. Please try again." + Style.RESET_ALL)
+            return False
 
     def deauthenticate(self):
         """

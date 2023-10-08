@@ -15,7 +15,7 @@ class APIClient:
         self.headers = {
             "Content-type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "DevAssistantClient/0.2",
+            "User-Agent": "DevAssistantCLI/0.0.2",
             "Authorization": f"Bearer {self.token}" if self.token else None
         }
         app_env = os.environ.get("APP_ENV")
