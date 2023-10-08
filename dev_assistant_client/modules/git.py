@@ -23,6 +23,8 @@ class GitModule:
             return self.git_status(args.get('directory'))
         elif operation == 'diff':
             return self.git_diff(args.get('file_path'), args.get('directory'))
+        elif operation == 'reset':
+            return self.git_reset(args.get('path'))
         elif operation == 'log':
             return self.git_log(args.get('directory'))
         else:
@@ -94,6 +96,17 @@ class GitModule:
             repo = self.Repo(repo_path)
             diff = repo.git.diff(file_path)
             return {"message": f"Repo diff in {repo_path}", "diff": diff}
+        except self.GitCommandError as e:
+            return {"error": str(e)}
+        except Exception as e:
+            return {"error": str(e)}
+        
+    def git_reset(self, path):
+        try:
+            repo_path = path or self.os.getcwd()
+            repo = self.Repo(repo_path)
+            repo.git.reset()
+            return {"message": f"Repo reset in {repo_path}"}
         except self.GitCommandError as e:
             return {"error": str(e)}
         except Exception as e:
