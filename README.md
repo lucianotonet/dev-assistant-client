@@ -21,21 +21,20 @@ The Dev Assistant Local Client is designed to streamline your development proces
 ## Requirements
 
 - 👌🏼 Python 3.11+
-- 👌🏼 Poetry
+- 👌🏼 Pip
 - 💸 ChatGPT Plus subscription _(for plugins store access)_
 
 ## Installation
 
 - Create a Dev Assistant account at [devassistant.tonet.dev](https://devassistant.tonet.dev)
-- Generate a token at [https://devassistant.tonet.dev/user/api-tokens](https://devassistant.tonet.dev/user/api-tokens) for ChatGPT and save it. You'll need it later.
+- Generate a token at [https://devassistant.tonet.dev/user/api-tokens](https://devassistant.tonet.dev/user/api-tokens) for ChatGPT and save it. You will need it later.
 - Install the local client:
   - [Install Python](https://www.python.org/downloads/)
-  - [Install pip](https://pip.pypa.io/en/stable/)
-  - Run `pip install dev-assistant-client` in your terminal  
+  - Run `pip install dev-assistant-client` in your terminal
 - Install the ChatGPT plugin:
-  - On the [ChatGPT Plugins Store](https://chat.openai.com/plugins), click in the **"Install an unverified plugin"** at bottom of Plugin store dialog window, paste the <https://devassistant.tonet.dev> and click on "Find plugin".
-  - ChatGPT will ask you to enter your credentials. Insert the token generated in the second step and click "Install plugin".
-  - Enable the plugin in the list of installed plugins and you're good to go!
+  - In the [ChatGPT Plugins Store](https://chat.openai.com/plugins), click on **"Install an unverified plugin"** at the bottom of the Plugin store dialog window, paste <https://devassistant.tonet.dev> and click on "Find plugin".
+  - ChatGPT will ask you to enter your credentials. Enter the token generated in the second step and click on "Install plugin".
+  - Activate the plugin in the list of installed plugins and you are ready to start!
 
 ## Usage
 
