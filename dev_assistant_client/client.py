@@ -58,8 +58,12 @@ async def connect_client():
             # authenticate client again
             client_auth = ClientAuth()
             if client_auth.authenticate():
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(connect_client())            
+                # If a loop is already running, create a new task in the running loop
+                if asyncio.get_event_loop().is_running():
+                    asyncio.create_task(connect_client())
+                else:
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(connect_client())          
 
         else:
             print(now(), "Status code: ", response.status_code, sep="\t")

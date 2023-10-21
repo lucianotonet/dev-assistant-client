@@ -20,8 +20,8 @@ The Dev Assistant Local Client is designed to streamline your development proces
 
 ## Requirements
 
-- 👌🏼 Python 3.6+
-- 👌🏼 pip
+- 👌🏼 Python 3.11+
+- 👌🏼 Poetry
 - 💸 ChatGPT Plus subscription _(for plugins store access)_
 
 ## Installation
