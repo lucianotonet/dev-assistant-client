@@ -3,6 +3,8 @@ import requests
 import json
 from urllib.parse import urlparse
 
+from dev_assistant_client.utils import read_token
+
 class APIClient:
     def __init__(self, base_url, cert_file=None, key_file=None, token=None):
         parsed_url = urlparse(base_url)
@@ -11,7 +13,7 @@ class APIClient:
         self.base_url = base_url.rstrip('/')  # Remove trailing slash if present
         self.cert_file = cert_file
         self.key_file = key_file
-        self.token = token
+        self.token = token or read_token()
         self.headers = {
             "Content-type": "application/json",
             "Accept": "application/json",
@@ -19,7 +21,7 @@ class APIClient:
             "Authorization": f"Bearer {self.token}" if self.token else None
         }
         app_env = os.environ.get("APP_ENV")
-        self.verify = False if app_env and app_env.lower() == "development" else True
+        self.verify = False if app_env and app_env.lower() == "local" else True
     
     def _make_request(self, method, endpoint, data=None):
         

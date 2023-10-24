@@ -3,6 +3,7 @@ import json
 import asyncio
 import socket
 from colorama import Fore, Style
+import requests
 from dev_assistant_client.client_auth import ClientAuth
 from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.ably_handler import AblyHandler
@@ -13,11 +14,10 @@ from dev_assistant_client.utils import (
     TOKEN_FILE,
     CLIENT_ID,
     API_URL,
+    dd,
     now,
     read_token,   
 )
-
-api_client = APIClient(f"{API_URL}", CERT_FILE, KEY_FILE)
 
 async def connect_client():
     """
@@ -28,19 +28,24 @@ async def connect_client():
     """
     print(now(), "Connecting...\t", sep="\t", end="\t")
     
-    token = read_token()
+    auth_client = ClientAuth()
+    api_client = APIClient(f"{API_URL}")
+    
+    # -------------------
+    
     payload = {
         "id": CLIENT_ID or "",
         "name": socket.gethostname(),
-        "type": "cli",
-    }
-
-    if token is not None:
-        api_client.headers["Authorization"] = "Bearer " + token
+        "type": "CLI",
+    }    
     response = api_client.post("/clients", data=payload)
+    if response.status_code == 401:  # Chamada não autorizada
+        return auth_client.reauthenticate()
+        
+    # -------------------
     
     client_id = json.loads(response.content).get("id")
-    
+ 
     if response.status_code in [200, 201]:
         print(Fore.LIGHTGREEN_EX + "Connected!" + Style.RESET_ALL, sep="\t")
         with open(CLIENT_ID_FILE, "w") as f:
@@ -56,8 +61,9 @@ async def connect_client():
             os.remove(TOKEN_FILE)
             
             # authenticate client again
-            client_auth = ClientAuth()
-            if client_auth.authenticate():
+            auth_client = ClientAuth()
+            auth_client.reauthenticate()
+            if auth_client.authenticate():
                 # If a loop is already running, create a new task in the running loop
                 if asyncio.get_event_loop().is_running():
                     asyncio.create_task(connect_client())

@@ -3,6 +3,7 @@ from colorama import Fore, Style
 from dev_assistant_client.config import api_client
 from dev_assistant_client.utils import save_token, delete_token, get_client_id, APP_URL
 import webbrowser
+import getpass
 
 class ClientAuth:
     """
@@ -24,7 +25,7 @@ class ClientAuth:
         client_id = get_client_id()
         
         webbrowser.open(f'{base_url}/auth/{client_id}?client_type=cli')
-        token = input("Enter the token received after successful authentication: ")
+        token = getpass.getpass("Enter the token received after successful authentication: ")
         
         if token:
             save_token(token)
@@ -40,6 +41,10 @@ class ClientAuth:
         """
         try:
             delete_token()
-            print("Successfully deauthenticated.")
+            print("You was disconnected.")
         except FileNotFoundError:
-            print("Client is not currently authenticated.")
+            print("CLI not authenticated.")
+
+    def reauthenticate(self):
+        self.deauthenticate()
+        return self.authenticate()

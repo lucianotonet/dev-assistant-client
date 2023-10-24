@@ -7,9 +7,8 @@ from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.modules.files import FilesModule
 from dev_assistant_client.modules.git import GitModule
 from dev_assistant_client.modules.terminal import TerminalModule
-from dev_assistant_client.utils import CERT_FILE, HEADERS, API_URL, CLIENT_ID, KEY_FILE, now, read_token
-
-api_client = APIClient(f"{API_URL}", CERT_FILE, KEY_FILE)
+from dev_assistant_client.client_auth import ClientAuth
+from dev_assistant_client.utils import CERT_FILE, HEADERS, API_URL, CLIENT_ID, KEY_FILE, dd, now, read_token
 
 class IOAssistant:
     MAX_RETRIES = 3
@@ -27,12 +26,16 @@ class IOAssistant:
         )
 
         response = ""
-        module = instruction.get("module").lower()  # convert to lowercase
+        # module = instruction.get("module").lower()  # convert to lowercase
         request = instruction.get("request")
 
-        operation = request.get("operation")
+        moduleOperation = request.get("operation")
         args = request.get("args")
-
+        
+        # split moduleOperation by _ and underline each word
+        module = moduleOperation.split("_")[0] # get the first part of the string
+        operation = moduleOperation.split("_")[1] # get the second part of the string
+        
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 if module == "files":
@@ -77,7 +80,7 @@ class IOAssistant:
             response_data = IOAssistant.execute_request(instruction)
 
             token = read_token()
-            HEADERS["Authorization"] = "Bearer " + token
+            HEADERS["Authorization"] = f'Bearer ${token}'
 
             payload = json.dumps({"response": response_data})
 
@@ -94,9 +97,13 @@ class IOAssistant:
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
-                token = read_token()
-                api_client.headers["Authorization"] = "Bearer " + token
+                api_client = APIClient(f"{API_URL}")
                 response = api_client.put(url)
+                                
+                if response.status_code == 401:
+                    print(now(), "Invalid token. Reauthenticating...", sep="\t")
+                    client_auth = ClientAuth()
+                    client_auth.reauthenticate()
 
                 if response.status_code in [200, 201, 202, 204]:
                     output = json.loads(response.content.decode("utf-8"))
@@ -127,8 +134,7 @@ class IOAssistant:
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
-                token = read_token()
-                api_client.headers["Authorization"] = "Bearer " + token
+                api_client = APIClient(f"{API_URL}")
                 response = api_client.put(url, data=json.loads(data))
                 if response.status_code == 200:
                     output = json.loads(response.content.decode("utf-8"))
