@@ -2,7 +2,8 @@ name: Deploy to PyPi
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
@@ -18,18 +19,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry 
         pip install toml requests packaging
-    - name: Check and bump version
-      run: python version_bump.py
-    - name: Commit changes
-      run: |
-        git config --local user.email "devassistant@tonet.dev"
-        git config --local user.name "Dev Assistant AI"
-        git diff --quiet && git diff --staged --quiet || git commit -m "Bump version" -a
-    - name: Push changes
-      if: github.actor != 'github-actions[bot]'
-      uses: ad-m/github-push-action@master
-      with:
-          github_token: ${{ secrets.PAT }}
     - name: Build and publish
       env:
         TWINE_USERNAME: __token__
