@@ -17,6 +17,21 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install poetry
+    - name: Run tests
+      run: |
+        # Add your test command
+    - name: Bump version
+      run: python bump_version.py
+    - name: Commit changes
+      run: |
+        git config --local user.email "devassistant@tonet.dev"
+        git config --local user.name "Dev Assistant AI"
+        git commit -m "Bump version" -a
+    - name: Push changes
+      if: github.actor != 'github-actions[bot]'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GH_TOKEN }}
     - name: Build and publish
       env:
         TWINE_USERNAME: __token__
