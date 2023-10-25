@@ -18,13 +18,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry 
         pip install toml requests packaging
-    - name: Bump version
+    - name: Check and bump version
       run: python version_bump.py
     - name: Commit changes
       run: |
         git config --local user.email "devassistant@tonet.dev"
         git config --local user.name "Dev Assistant AI"
-        git commit -m "Bump version" -a
+        git diff --quiet && git diff --staged --quiet || git commit -m "Bump version" -a
     - name: Push changes
       if: github.actor != 'github-actions[bot]'
       uses: ad-m/github-push-action@master
