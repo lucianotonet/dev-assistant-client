@@ -20,9 +20,10 @@ The Dev Assistant Local Client is designed to streamline your development proces
 
 ## Requirements
 
-- 👌🏼 Python 3.11+
-- 👌🏼 Pip
+- 🆓 Python 3.11+
+- 🆓 Pip and Poetry
 - 💸 ChatGPT Plus subscription _(for plugins store access)_
+- ⭐ [ChatGPT Plugins development access](https://openai.com/waitlist/plugins)
 
 ## Installation
 
@@ -44,7 +45,7 @@ Once installed, just run the following:
 dev-assistant
 ```
 
-You will be prompted to enter your email and password, if you're not already logged in. Once authenticated, the client will automatically establish a connection with the server.
+If the CLI is not already authenticated, it will open a browser window where you will be provided with a token. Copy the token including the pipe, and return to the terminal.
 
 If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive _CLIENT ID_, like this:
 
@@ -60,21 +61,27 @@ If everything runs well, you will see the Dev Assistant CLI presentation and a e
 ...
 ```
 
-You can now ask ChatGPT to help you directly on that client.
+You can now ask ChatGPT to access your development environment and execute commands on your behalf by passing the _CLIENT ID_, or just let ChatGPT discover it by itself.
 
-You can do `CRTL+C` to stop the client at any time.
-
-To log out, use:
-
-```bash
-dev-assistant logout
-```
-
-This command will remove your saved authentication token, ensuring your security.
+You can stop the client just doing a `CRTL+C` in the terminal at any time.
 
 ## Contributing
 
 We welcome contributions! If you have an idea for an improvement or have found a bug, please open an issue. Feel free to fork the repository and submit a pull request if you'd like to contribute code. Please follow the code style and conventions used in the existing codebase.
+
+## Development
+
+- Fork the repository
+- Clone your fork
+- Go to the project folder
+- Install Dev Assistant Client in local mode with `pip install -e .`
+- Run `dev-assistant` in your terminal
+- Make your changes
+- Test your changes
+- Commit your changes
+- Push your changes
+- Open a pull request
+- 🎉
 
 ## License
 
