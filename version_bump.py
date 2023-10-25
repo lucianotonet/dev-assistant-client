@@ -13,7 +13,7 @@ def get_online_version():
     return response.json()["info"]["version"]
 
 def bump_version(local_version, online_version):
-    if version.parse(online_version) > version.parse(local_version):
+    if version.parse(online_version) >= version.parse(local_version):
         version_parts = online_version.split('.')
         version_parts[-1] = str(int(version_parts[-1]) + 1)
         new_version = '.'.join(version_parts)
