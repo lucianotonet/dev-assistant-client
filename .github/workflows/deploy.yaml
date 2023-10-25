@@ -20,6 +20,10 @@ jobs:
     - name: Run tests
       run: |
         # Add your test command
+    - name: 👀 Debug cwd
+      run: |
+        pwd
+        ls -la
     - name: Bump version
       run: python version_bump.py
     - name: Commit changes
