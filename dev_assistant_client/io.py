@@ -76,6 +76,26 @@ class IOAssistant:
             # logging.error("Error", e)
             print(now(), "Error: ", e)
 
+        # Adding desktop notification when a message is received
+        # Using plyer module for cross-platform compatibility
+        from plyer import notification
+        import pkg_resources
+
+        icon_path = pkg_resources.resource_filename('dev_assistant_client', 'icon.ico')
+        try:
+            notification.notify(
+                title='Dev Assistant', 
+                message=message.data.get("feedback"),
+                app_name='Dev Assistant',
+                app_icon=icon_path, 
+                timeout=10, 
+                ticker='Dev Assistant Notification', 
+                toast=True, 
+                hints={"x": 100, "y": 100}
+            )
+        except Exception as e:
+            print("Error loading notification icon: ", e)
+
         try:
             response_data = IOAssistant.execute_request(instruction)
 
