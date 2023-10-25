@@ -50,15 +50,18 @@ If the CLI is not already authenticated, it will open a browser window where you
 If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive _CLIENT ID_, like this:
 
 ```
-# dev-assistant
 
-    .-----.   Dev Assistant
-    | >_< |   v0.1.28
-    '-----'   https://devassistant.tonet.dev
+        ╭─────╮   Dev Assistant
+        │ >_< │   v0.2.34
+        ╰─────╯   https://devassistant.tonet.dev
 
-31/07/2023 00:43:19     Connecting...
-31/07/2023 00:43:20     Connected.      CLIENT ID 654c5jf7-7993-4b44-ae92-ec51t88339cd
-...
+›       Connecting...           Connected!
+›       CLIENT ID:              6a35a11c-f34e-4e30-be46-a9ac4d0f5ac7
+›       WebSockets...           Connected!
+›       Private channel...      Connected!
+›       Ready!  Listening for instructions...
+›       
+
 ```
 
 You can now ask ChatGPT to access your development environment and execute commands on your behalf by passing the _CLIENT ID_, or just let ChatGPT discover it by itself.
@@ -69,10 +72,9 @@ You can stop the client just doing a `CRTL+C` in the terminal at any time.
 
 To update the version of the package, follow these steps:
 
-1. Update the version in the `pyproject.toml` file.
-2. Commit your changes with a descriptive message.
-3. Create a git tag with the format `vX.Y.Z` where `X.Y.Z` is the new version number.
-4. Push your changes and the new tag to the repository.
+1. Commit your changes with a descriptive message.
+2. Create a git tag with the format `vX.Y.Z` where `X.Y.Z` is the new version number.
+3. Push your changes and the new tag to the repository.
 
 The GitHub Actions workflow will automatically deploy the new version to PyPi when a new tag is detected.
 
