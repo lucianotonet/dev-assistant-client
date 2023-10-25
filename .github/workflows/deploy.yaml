@@ -21,7 +21,7 @@ jobs:
       run: |
         # Add your test command
     - name: Bump version
-      run: python bump_version.py
+      run: python version_bump.py
     - name: Commit changes
       run: |
         git config --local user.email "devassistant@tonet.dev"
