@@ -20,8 +20,8 @@ The Dev Assistant Local Client is designed to streamline your development proces
 
 ## Requirements
 
-- 🆓 Python 3.11+
-- 🆓 Pip and Poetry
+- 📓 Python 3.11+
+- 📓 Pip and Poetry
 - 💸 ChatGPT Plus subscription _(for plugins store access)_
 - ⭐ [ChatGPT Plugins development access](https://openai.com/waitlist/plugins)
 
@@ -64,6 +64,17 @@ If everything runs well, you will see the Dev Assistant CLI presentation and a e
 You can now ask ChatGPT to access your development environment and execute commands on your behalf by passing the _CLIENT ID_, or just let ChatGPT discover it by itself.
 
 You can stop the client just doing a `CRTL+C` in the terminal at any time.
+
+## Versioning
+
+To update the version of the package, follow these steps:
+
+1. Update the version in the `pyproject.toml` file.
+2. Commit your changes with a descriptive message.
+3. Create a git tag with the format `vX.Y.Z` where `X.Y.Z` is the new version number.
+4. Push your changes and the new tag to the repository.
+
+The GitHub Actions workflow will automatically deploy the new version to PyPi when a new tag is detected.
 
 ## Contributing
 
