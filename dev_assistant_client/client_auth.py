@@ -18,6 +18,10 @@ class ClientAuth:
         """
         print("\nOpening authentication page in browser...")
         
+        # Print the URL for the authentication page
+        print(f"If not, please open URL in your browser: ", sep="\t", end="\t")
+        print(Fore.LIGHTGREEN_EX + f"{APP_URL}/auth/{get_client_id()}?client_type=cli" + Style.RESET_ALL)
+        
         # Determine the URL based on environment
         base_url = APP_URL
         
