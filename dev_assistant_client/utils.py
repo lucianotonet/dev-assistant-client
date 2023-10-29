@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import uuid
+import appdirs
 from pathlib import Path
 from colorama import Fore, Style
 from dotenv import load_dotenv
@@ -16,8 +17,9 @@ API_PATH = os.getenv("API_PATH", "api")
 API_URL = f"{APP_URL}/{API_PATH}"
 
 # Define the exclusive directory for dot files
-DOTFILES_DIR = Path.home() / ".dev-assistant" if APP_URL == "https://devassistant.tonet.dev" else Path.home() / ".dev-assistant-test"
-DOTFILES_DIR.mkdir(mode=775, parents=True, exist_ok=True)
+app_name = "dev-assistant" if APP_URL == "https://devassistant.tonet.dev" else "dev-assistant-test"
+DOTFILES_DIR = Path(appdirs.user_data_dir(app_name))
+DOTFILES_DIR.mkdir(parents=True, exist_ok=True)
 
 # Define file paths for token, user data, ably token and client id
 TOKEN_FILE = DOTFILES_DIR / "auth_token"

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "dev-assistant-client"
-version = "0.2.34"
+version = "0.2.35"
 description = "Dev Assistant client"
 authors = [ "Luciano T. <tonetlds@gmail.com>",]
 readme = "README.md"
@@ -12,7 +12,7 @@ readme = "README.md"
 include = "dev_assistant_client"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 colorama = "^0.4.6"
 python-dotenv = "^1.0.0"
 unidiff = "^0.7.5"
@@ -26,6 +26,7 @@ ably = "^2.0.1"
 requests = "^2.26.0"
 packaging = "^23.2"
 plyer = "^2.1.0"
+appdirs = "^1.4.4"
 
 [tool.poetry.scripts]
 dev-assistant-client = "dev_assistant_client:cli"

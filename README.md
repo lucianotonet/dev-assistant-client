@@ -4,13 +4,13 @@ Welcome to the [Dev Assistant](https://devassistant.tonet.dev) plugin for ChatGP
 
 ## What is it?
 
-[Dev Assistant](https://devassistant.tonet.dev) is a plugin for ChatGPT that assists us developers by executing tasks directly on our clients.
+[Dev Assistant](https://devassistant.tonet.dev) is a plugin for ChatGPT that assists us developers by executing tasks directly on our development environment.
 
-Dev Assistant Client (this repo) is a Python package that is basically the core component of the project. It receives instructions from ChatGPT via Dev Assistant plugin, executes it on any of your clients and send the response back.
+Dev Assistant Client (this repo) is a Python package that is basically the core component of the project. It receives instructions from ChatGPT via Dev Assistant plugin, executes it olcoally and send the response back.
 
 ## Features
 
-The Dev Assistant Local Client is designed to streamline your development process by offering a range of functionalities:
+The Dev Assistant Client is designed to streamline your development process by offering a range of functionalities:
 
 - **File Management**: Create, read, update, and delete files. List the contents of a directory. You can manage your files without leaving your conversation with ChatGPT.
 
@@ -20,7 +20,7 @@ The Dev Assistant Local Client is designed to streamline your development proces
 
 ## Requirements
 
-- 📓 Python 3.11+
+- 📓 Python 3.10+
 - 📓 Pip and Poetry
 - 💸 ChatGPT Plus subscription _(for plugins store access)_
 - ⭐ [ChatGPT Plugins development access](https://openai.com/waitlist/plugins)
