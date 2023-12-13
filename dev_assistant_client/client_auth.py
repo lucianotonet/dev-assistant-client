@@ -1,7 +1,7 @@
 import os
 from colorama import Fore, Style
-from dev_assistant_client.config import api_client
-from dev_assistant_client.utils import save_token, delete_token, get_client_id, APP_URL
+from .config import api_client
+from .utils import save_token, delete_token, get_client_id, APP_URL
 import webbrowser
 import getpass
 
@@ -11,7 +11,7 @@ class ClientAuth:
     This includes generating a token for the client after authenticating via a web browser.
     """
     
-    def authenticate(self):
+    async def authenticate(self):
         """
         Opens the authentication page in the browser for the client to be authenticated.
         Once authenticated, the user should be provided with a token that they'll enter here.
@@ -20,7 +20,7 @@ class ClientAuth:
         
         # Print the URL for the authentication page
         print(f"If not, please open URL in your browser: ", sep="\t", end="\t")
-        print(Fore.LIGHTGREEN_EX + f"{APP_URL}/auth/{get_client_id()}?client_type=cli" + Style.RESET_ALL)
+        print(Fore.LIGHTGREEN_EX + f"{APP_URL}/auth/clients/{get_client_id()}" + Style.RESET_ALL)
         
         # Determine the URL based on environment
         base_url = APP_URL
@@ -28,13 +28,13 @@ class ClientAuth:
         # current client id
         client_id = get_client_id()
         
-        webbrowser.open(f'{base_url}/auth/{client_id}?client_type=cli')
+        webbrowser.open(f'{base_url}/auth/clients/{client_id}')
         token = getpass.getpass("Enter the token received after successful authentication: ")
         
         if token:
             save_token(token)
             print(Fore.LIGHTGREEN_EX + "Authenticated successfully!" + Style.RESET_ALL)
-            return True
+            
         else:
             print(Fore.LIGHTRED_EX + "Authentication failed. Please try again." + Style.RESET_ALL)
             return False
@@ -48,7 +48,3 @@ class ClientAuth:
             print("You was disconnected.")
         except FileNotFoundError:
             print("CLI not authenticated.")
-
-    def reauthenticate(self):
-        self.deauthenticate()
-        return self.authenticate()

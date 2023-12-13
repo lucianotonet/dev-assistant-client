@@ -4,12 +4,13 @@ import os
 
 from time import sleep
 from colorama import Fore, Style
+import pkg_resources
 from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.modules.files import FilesModule
 from dev_assistant_client.modules.git import GitModule
 from dev_assistant_client.modules.terminal import TerminalModule
 from dev_assistant_client.client_auth import ClientAuth
-from dev_assistant_client.utils import CERT_FILE, HEADERS, API_URL, CLIENT_ID, KEY_FILE, dd, now, read_token
+from dev_assistant_client.utils import CALLBACK_URL, CERT_FILE, HEADERS, API_URL, CLIENT_ID, KEY_FILE, dd, now, read_token
 
 class IOAssistant:
     MAX_RETRIES = 3
@@ -61,7 +62,7 @@ class IOAssistant:
         return response
 
     @staticmethod
-    def process_message(message):
+    async def process_message(message):
         print(
             now(),
             "Receiving request ...",
@@ -72,32 +73,10 @@ class IOAssistant:
         instruction = message.data
         
         try:
-            IOAssistant.set_as_read(instruction)
+            await IOAssistant.set_as_read(instruction)
         except Exception as e:
             # logging.error("Error", e)
-            print(now(), "Error: ", e)
-
-        # Adding desktop notification when a message is received
-        # Using plyer module for cross-platform compatibility
-        # Check if the system is WSL to avoid notification error
-        if "microsoft" not in os.name and "WSL" not in os.name:
-            from plyer import notification
-            import pkg_resources
-
-            icon_path = pkg_resources.resource_filename('dev_assistant_client', 'icon.ico')
-            try:
-                notification.notify(
-                    title='Dev Assistant', 
-                    message=message.data.get("feedback"),
-                    app_name='Dev Assistant',
-                    app_icon=icon_path, 
-                    timeout=10, 
-                    ticker='Dev Assistant Notification', 
-                    toast=True, 
-                    hints={"x": 100, "y": 100}
-                )
-            except Exception as e:
-                print("Error loading notification icon: ", e)
+            print(now(), "Error: ", e)        
 
         try:
             response_data = IOAssistant.execute_request(instruction)
@@ -113,7 +92,7 @@ class IOAssistant:
             print(now(), "Error: ", e)
             
     @staticmethod
-    def set_as_read(instruction):
+    async def set_as_read(instruction):
         print(now(), "Setting as received ...", sep="\t", end="\t")
         
         url = f'/clients/{CLIENT_ID}/io/{instruction.get("id")}'
@@ -126,7 +105,7 @@ class IOAssistant:
                 if response.status_code == 401:
                     print(now(), "Invalid token. Reauthenticating...", sep="\t")
                     client_auth = ClientAuth()
-                    client_auth.reauthenticate()
+                    await client_auth.authenticate()
 
                 if response.status_code in [200, 201, 202, 204]:
                     output = json.loads(response.content.decode("utf-8"))
@@ -157,7 +136,7 @@ class IOAssistant:
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
-                api_client = APIClient(f"{API_URL}")
+                api_client = APIClient(f"{CALLBACK_URL or API_URL}")
                 response = api_client.put(url, data=json.loads(data))
                 if response.status_code == 200:
                     output = json.loads(response.content.decode("utf-8"))

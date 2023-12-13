@@ -1,12 +1,14 @@
+import tracemalloc
+tracemalloc.start()
 import asyncio
 import argparse
 import time
-
+import sys
 from dotenv import load_dotenv
 from colorama import Fore, Style
-from dev_assistant_client.client import connect_client
-from dev_assistant_client.client_auth import ClientAuth
-from dev_assistant_client.utils import APP_URL, read_token
+from .client import connect_client
+from .client_auth import ClientAuth
+from .utils import APP_URL, dd, read_token
 
 import pkg_resources
 
@@ -16,7 +18,7 @@ class DevAssistant:
     
     def __init__(self):
         self.auth = ClientAuth()
-        self.package_version = pkg_resources.get_distribution("dev-assistant-client").version
+        self.package_version = pkg_resources.get_distribution("dev_assistant-client").version
         self.print_header()
 
     def print_header(self):
@@ -27,15 +29,17 @@ class DevAssistant:
         ╰─────╯   ''' + Fore.LIGHTYELLOW_EX + APP_URL + Fore.LIGHTGREEN_EX + '''
         ''' + Style.RESET_ALL)
 
-    def cli(self):
-        from dev_assistant_client.cli import cli
-        cli()
+    async def cli(self):
+        from .cli import cli
+        await cli()
 
-    def run(self, args=None):
+    async def run(self, args=None):
         token = read_token()
+        
+        print('Starting Dev Assistant...')
 
         if token is None:
-            self.auth.authenticate()
+            await self.auth.authenticate()
             
         # Parse command line arguments
         parser = argparse.ArgumentParser(prog='dev-assistant-client')
@@ -45,14 +49,12 @@ class DevAssistant:
         parser_logout.set_defaults(func=self.auth.deauthenticate)
                 
         try:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(connect_client())
-            loop.close()
+            await connect_client()
         except KeyboardInterrupt:
             print("\nProcess interrupted by user. Exiting...")        
         finally:
             time.sleep(1)
+            await self.cli()  # Adicione 'await' aqui
             
 if __name__ == "__main__":
-    DevAssistant().run()
-
+    asyncio.run(DevAssistant().run())

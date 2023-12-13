@@ -1,1 +1,3 @@
-from dev_assistant_client.cli import cli
+import asyncio
+from .cli import cli
+asyncio.run(cli())

@@ -16,8 +16,10 @@ APP_URL = os.getenv("APP_URL", "https://devassistant.tonet.dev")
 API_PATH = os.getenv("API_PATH", "api")
 API_URL = f"{APP_URL}/{API_PATH}"
 
+CALLBACK_URL=f"{os.getenv('CALLBACK_URL', APP_URL)}/{API_PATH}"
+
 # Define the exclusive directory for dot files
-app_name = "dev-assistant" if APP_URL == "https://devassistant.tonet.dev" else "dev-assistant-test"
+app_name = "dev-assistant" if APP_URL == "https://devassistant.tonet.dev" else "dev-assistant-local"
 DOTFILES_DIR = Path(appdirs.user_data_dir(app_name))
 DOTFILES_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -1,15 +1,20 @@
+import logging
 import argparse
 import os
 from colorama import Fore, Style
 from dotenv import load_dotenv
 import requests
 from packaging import version
+from .utils import dd
 import pkg_resources
 
 from dev_assistant_client.dev_assistant_client import DevAssistant
 
 load_dotenv()
 
+logging.basicConfig(level=logging.DEBUG)
+if os.getenv('DEBUG', 'False') != 'True':
+    logging.disable()
 
 def check_for_update():
     """
@@ -27,18 +32,17 @@ def check_for_update():
     return version.parse(latest_version) > version.parse(current_version)
 
 
-def cli():
+async def cli():
     """
     The main CLI entry point. Handles the command-line arguments, checks for updates,
     and runs the DevAssistant client.
-    """
-    
+    """        
     try:
         if check_for_update():
             print(Fore.LIGHTYELLOW_EX + "📦 New version available! "  + Style.RESET_ALL + "\nPlease run 'pip install --upgrade dev-assistant-client' to upgrade." )
     except:
         # Fine if this fails
-        DevAssistant().run()
+        await DevAssistant().run()
 
     DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
@@ -59,5 +63,7 @@ def cli():
     if args.version:
         print("Dev Assistant", pkg_resources.get_distribution("dev-assistant-client").version)
         return
+    if args.debug:
+        logging.disable(0)
 
-    DevAssistant().run()
+    await DevAssistant().run()
