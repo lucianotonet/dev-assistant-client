@@ -1,8 +1,8 @@
-class FilesModule:
-    import os
-    import shutil
-    import unidiff
+import os
+import shutil
+import unidiff
 
+class FilesModule:
     def __init__(self):
         self.operations = {
             "create": self.create,
@@ -29,9 +29,9 @@ class FilesModule:
 
     def create(self, arguments):
         path, content = arguments.split(',')
-        directory = self.os.path.dirname(path)
-        if not self.os.path.exists(directory):
-            self.os.makedirs(directory)
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         with open(path, "w", encoding="utf-8") as file:
             if content:
@@ -39,10 +39,10 @@ class FilesModule:
         return {"message": f"File created at {path}"}
 
     def read(self, path):
-        if not self.os.path.exists(path):
+        if not os.path.exists(path):
             return {"error": f"Path does not exist: {path}"}
 
-        if self.os.path.isdir(path):
+        if os.path.isdir(path):
             return self.list_dir(path)
 
         with open(path, "r", encoding="utf-8") as file:
@@ -52,7 +52,7 @@ class FilesModule:
 
     def update(self, arguments):
         path, content = arguments.split(',')
-        if not self.os.path.exists(path):
+        if not os.path.exists(path):
             return {"error": f"File does not exist: {path}"}
 
         with open(path, "w", encoding="utf-8") as file:
@@ -61,18 +61,18 @@ class FilesModule:
         return {"message": f"File updated at {path}"}
 
     def delete(self, path):
-        if not self.os.path.exists(path):
+        if not os.path.exists(path):
             return {"error": f"File does not exist: {path}"}
 
-        self.os.remove(path)
+        os.remove(path)
         return {"message": f"File deleted at {path}"}
 
     def list_dir(self, path):
-        if not self.os.path.exists(path):
+        if not os.path.exists(path):
             return {"error": f"Directory does not exist: {path}"}
 
         try:
-            files = self.os.listdir(path)
+            files = os.listdir(path)
         except Exception as e:
             return {"error": f"Error listing directory: {e}"}
         
@@ -80,38 +80,38 @@ class FilesModule:
 
     def copy(self, arguments):
         source, destination = arguments.split(',')
-        if not self.os.path.exists(source):
+        if not os.path.exists(source):
             return {"error": f"File does not exist: {source}"}
 
-        self.shutil.copy(source, destination)
+        shutil.copy(source, destination)
         return {"message": f"File copied from {source} to {destination}"}
 
     def move(self, arguments):
         source, destination = arguments.split(',')
-        if not self.os.path.exists(source):
+        if not os.path.exists(source):
             return {"error": f"File does not exist: {source}"}
 
-        self.shutil.move(source, destination)
+        shutil.move(source, destination)
         return {"message": f"File moved from {source} to {destination}"}
 
     def rename(self, arguments):
         source, destination = arguments.split(',')
-        if not self.os.path.exists(source):
+        if not os.path.exists(source):
             return {"error": f"File does not exist: {source}"}
 
-        self.os.rename(source, destination)
+        os.rename(source, destination)
         return {"message": f"File renamed from {source} to {destination}"}
 
     def apply_diff(self, arguments):
         path, diff_instructions = arguments.split(',')
-        if not self.os.path.exists(path):
+        if not os.path.exists(path):
             return {"error": f"File does not exist: {path}"}
 
         with open(path, "r", encoding="utf-8") as file:
             original_content = file.read()
 
         # Apply diff instructions using unidiff
-        patch_set = self.unidiff.PatchSet.from_string(diff_instructions)
+        patch_set = unidiff.PatchSet.from_string(diff_instructions)
         patched_content = original_content
         for patched_file in patch_set:
             for hunk in patched_file:
@@ -124,13 +124,13 @@ class FilesModule:
         return {"message": f"Diff applied to file at {path}"}
 
     def exists(self, path):
-        return {"exists": self.os.path.exists(path)}
+        return {"exists": os.path.exists(path)}
 
     def is_file(self, path):
-        return {"is_file": self.os.path.isfile(path)}
+        return {"is_file": os.path.isfile(path)}
 
     def is_dir(self, path):
-        return {"is_dir": self.os.path.isdir(path)}
+        return {"is_dir": os.path.isdir(path)}
 
     def get_size(self, path):
-        return {"size": self.os.path.getsize(path)}
+        return {"size": os.path.getsize(path)}

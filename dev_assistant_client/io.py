@@ -1,10 +1,9 @@
 import json
 import logging
 import os
-
+import pkg_resources
 from time import sleep
 from colorama import Fore, Style
-import pkg_resources
 from dev_assistant_client.api_client import APIClient
 from dev_assistant_client.modules.files import FilesModule
 from dev_assistant_client.modules.git import GitModule
@@ -14,9 +13,6 @@ from dev_assistant_client.utils import CALLBACK_URL, CERT_FILE, HEADERS, API_URL
 
 class IOAssistant:
     MAX_RETRIES = 3
-
-    def __init__(self):
-        pass
 
     @staticmethod
     def execute_request(instruction):
@@ -28,11 +24,11 @@ class IOAssistant:
         )
 
         response = ""
-        module      = instruction.get("module").lower()  # convert to lowercase
-        request     = instruction.get("request")
-        operation   = request.get("operation")
-        arguments   = request.get("arguments")
-        
+        module = instruction.get("module").lower()
+        request = instruction.get("request")
+        operation = request.get("operation")
+        arguments = request.get("arguments") if isinstance(request.get("arguments"), list) else [request.get("arguments")]
+
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 if module == "files":
@@ -45,14 +41,12 @@ class IOAssistant:
                     response = "Invalid module or operation"
                 break
             except Exception as e:
-                #  TODO: handle exceptions
                 logging.error("Error", e)
                 print(now(), "Error: ", e)
                 print(Fore.LIGHTRED_EX + "ERROR:" + Style.RESET_ALL)
                 print(e)
-                sleep(0.5)
-            else:
-                return response
+                return e
+
         print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
         return response
 
@@ -64,14 +58,13 @@ class IOAssistant:
             message.data.get("feedback"),
             sep="\t",
         )
-        
+
         instruction = message.data
-        
+
         try:
             await IOAssistant.set_as_processing(instruction)
         except Exception as e:
-            # logging.error("Error", e)
-            print(now(), "Error: ", e)        
+            print(now(), "Error: ", e)
 
         try:
             response_data = IOAssistant.execute_request(instruction)
@@ -81,20 +74,19 @@ class IOAssistant:
 
             IOAssistant.send_response(instruction, response_data)
         except Exception as e:
-            # logging.error("Error", e)
             print(now(), "Error: ", e)
-            
+
     @staticmethod
     async def set_as_processing(instruction):
-        print(now(), "Setting as processing ...", sep="\t", end="\t")
-        
+        print(now(), "Setting status ...", sep="\t", end="\t")
+
         url = f'/io/{instruction.get("id")}'
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 api_client = APIClient(f"{API_URL}")
-                response = api_client.put(url, data={"status":"processing"})
-                                
+                response = api_client.put(url, data={"status": "processing"})
+
                 if response.status_code == 401:
                     print(now(), "Invalid token. Reauthenticating...", sep="\t")
                     client_auth = ClientAuth()
@@ -105,10 +97,8 @@ class IOAssistant:
                     response = output.get("response")
                     break
                 else:
-                    # logging.error("Error", response.status_code, response.content)
                     print(now(), "Error: ", response.status_code, json.loads(response.content.decode("utf-8")))
             except Exception as e:
-                # logging.error("Error", e)
                 print(now(), "Error: ", e)
                 sleep(1)
             else:
@@ -130,19 +120,18 @@ class IOAssistant:
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 api_client = APIClient(f"{CALLBACK_URL or API_URL}")
-                
+
                 return_data = {
                     "status": "done",
                     "response": data
                 }
-                
+
                 response = api_client.put(url, data=return_data)
                 if response.status_code == 200:
                     output = json.loads(response.content.decode("utf-8"))
                     response = output.get("response")
                     break
                 else:
-                    # logging.error("Error", response.status_code, response.content)
                     print(now(), "Error: ", response.status_code, json.loads(response.content.decode("utf-8")))
             except Exception as e:
                 print(Fore.LIGHTRED_EX + "Error:" + Style.RESET_ALL, e)
@@ -151,4 +140,3 @@ class IOAssistant:
                 return
         print(Fore.LIGHTGREEN_EX + "Done ✓ " + Style.RESET_ALL)
         return response
-
