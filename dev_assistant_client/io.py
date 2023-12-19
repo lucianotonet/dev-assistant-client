@@ -28,24 +28,19 @@ class IOAssistant:
         )
 
         response = ""
-        # module = instruction.get("module").lower()  # convert to lowercase
-        request = instruction.get("request")
-
-        moduleOperation = request.get("operation")
-        args = request.get("args")
-        
-        # split moduleOperation by _ and underline each word
-        module = moduleOperation.split("_")[0] # get the first part of the string
-        operation = moduleOperation.split("_")[1] # get the second part of the string
+        module      = instruction.get("module").lower()  # convert to lowercase
+        request     = instruction.get("request")
+        operation   = request.get("operation")
+        arguments   = request.get("arguments")
         
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 if module == "files":
-                    response = FilesModule().execute(operation, args)
+                    response = FilesModule().execute(operation, arguments)
                 elif module == "git":
-                    response = GitModule().execute(operation, args)
+                    response = GitModule().execute(operation, arguments)
                 elif module == "terminal":
-                    response = TerminalModule().execute(operation, args)
+                    response = TerminalModule().execute(operation, arguments)
                 else:
                     response = "Invalid module or operation"
                 break
@@ -73,7 +68,7 @@ class IOAssistant:
         instruction = message.data
         
         try:
-            await IOAssistant.set_as_read(instruction)
+            await IOAssistant.set_as_processing(instruction)
         except Exception as e:
             # logging.error("Error", e)
             print(now(), "Error: ", e)        
@@ -84,23 +79,21 @@ class IOAssistant:
             token = read_token()
             HEADERS["Authorization"] = f'Bearer ${token}'
 
-            payload = json.dumps({"response": response_data})
-
-            IOAssistant.send_response(instruction, payload)
+            IOAssistant.send_response(instruction, response_data)
         except Exception as e:
             # logging.error("Error", e)
             print(now(), "Error: ", e)
             
     @staticmethod
-    async def set_as_read(instruction):
-        print(now(), "Setting as received ...", sep="\t", end="\t")
+    async def set_as_processing(instruction):
+        print(now(), "Setting as processing ...", sep="\t", end="\t")
         
-        url = f'/clients/{CLIENT_ID}/io/{instruction.get("id")}'
+        url = f'/io/{instruction.get("id")}'
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 api_client = APIClient(f"{API_URL}")
-                response = api_client.put(url)
+                response = api_client.put(url, data={"status":"processing"})
                                 
                 if response.status_code == 401:
                     print(now(), "Invalid token. Reauthenticating...", sep="\t")
@@ -132,12 +125,18 @@ class IOAssistant:
             end="\t",
         )
 
-        url = f'/clients/{CLIENT_ID}/io/{instruction.get("id")}'
+        url = f'/io/{instruction.get("id")}'
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 api_client = APIClient(f"{CALLBACK_URL or API_URL}")
-                response = api_client.put(url, data=json.loads(data))
+                
+                return_data = {
+                    "status": "done",
+                    "response": data
+                }
+                
+                response = api_client.put(url, data=return_data)
                 if response.status_code == 200:
                     output = json.loads(response.content.decode("utf-8"))
                     response = output.get("response")
@@ -151,4 +150,5 @@ class IOAssistant:
             else:
                 return
         print(Fore.LIGHTGREEN_EX + "Done ✓ " + Style.RESET_ALL)
-        return
+        return response
+

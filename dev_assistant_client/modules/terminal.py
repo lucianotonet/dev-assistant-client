@@ -4,15 +4,16 @@ class TerminalModule:
     def __init__(self):
         pass
 
-    def execute(self, operation, args):
+    def execute(self, operation, arguments=None):
         if operation == 'run':
-            return self.run(args.get('command'))
+            return self.run(arguments)
         else:
-            return {'error': f'Unknown operation: {operation}'}
+            return self.run(operation, arguments)
+            # return {'error': f'Unknown operation: {operation}'}
 
-    def run(self, command):
+    def run(self, command, arguments=None):
         try:
-            process = self.subprocess.Popen(command, stdout=self.subprocess.PIPE, stderr=self.subprocess.PIPE, shell=True)
+            process = self.subprocess.Popen(command + ' ' + arguments if arguments else command, stdout=self.subprocess.PIPE, stderr=self.subprocess.PIPE, shell=True)
             output, error = process.communicate()
             if process.returncode != 0:
                 return {'error': error.decode('utf-8')}

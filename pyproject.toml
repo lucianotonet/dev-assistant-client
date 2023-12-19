@@ -28,6 +28,7 @@ packaging = "^23.2"
 plyer = "^2.1.0"
 appdirs = "^1.4.4"
 pyinstaller = "^6.3.0"
+pusher = "^3.3.2"
 
 [tool.poetry.scripts]
 dev-assistant-client = "dev_assistant_client:cli"
