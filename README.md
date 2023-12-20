@@ -4,9 +4,9 @@ Welcome to the [Dev Assistant](https://devassistant.tonet.dev) project.
 
 ## What is it?
 
-[Dev Assistant](https://devassistant.tonet.dev) is custom Dev Assistant GPT that can help us developers by executing tasks directly on our development environment.
+[Dev Assistant](https://devassistant.tonet.dev) is a *GPTs*, a ([tailored version of ChatGPT](https://openai.com/chatgpt#do-more-with-gpts)) that can assist developers by executing tasks directly in our development environment. GPTs are a new way for anyone to create a tailored version of ChatGPT to be more helpful in their daily life, at specific tasks, at work, or at home. For more information about GPTs, please refer to [OpenAI's blog post](https://openai.com/blog/introducing-gpts).
 
-This repo contains the Dev Assistant CLI, which is a Python package that is basically the core component of the project. It receives instructions from Dev Assistant GPT, executes it locally and sends the response back.
+This repository contains the Dev Assistant CLI, a Python package that serves as the core component of the project. It receives instructions from Dev Assistant GPT, executes them locally, and sends the response back.
 
 ## Features
 
@@ -43,7 +43,7 @@ dev-assistant
 
 If the CLI is not already authenticated, it will open a browser window where you will be provided with a token. Copy the token including the pipe, and return to the terminal.
 
-If everything runs well, you will see the Dev Assistant CLI presentation and a exclusive _CLIENT ID_, like this:
+If everything runs well, you will see the Dev Assistant CLI presentation and a unique _CLIENT ID_, like this:
 
 ```
 
