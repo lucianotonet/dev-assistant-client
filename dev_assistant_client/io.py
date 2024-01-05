@@ -122,7 +122,7 @@ class IOAssistant:
                 api_client = APIClient(f"{CALLBACK_URL or API_URL}")
 
                 return_data = {
-                    "status": "done",
+                    "status": "completed",
                     "response": data
                 }
 
