@@ -1,6 +1,7 @@
 import os
 import shutil
 import unidiff
+import inspect
 
 class FilesModule:
     def __init__(self):
@@ -20,12 +21,24 @@ class FilesModule:
             "get_size": self.get_size
         }
     
-    def execute(self, operation, arguments):
+    def execute(self, operation, arguments=None):
+        arguments = arguments or []
         operation_func = self.operations.get(operation)
+        response = None
         if operation_func:
-            return operation_func(arguments)
+            try:
+                expected_args = inspect.signature(operation_func).parameters
+                if isinstance(arguments, list) and len(arguments) == len(expected_args) and None not in arguments:
+                    response = operation_func(*arguments)
+                elif not isinstance(arguments, list) and len(expected_args) == 1 and arguments is not None:
+                    response = operation_func(arguments)
+                else:
+                    response = {'error': f'Invalid number of arguments: {arguments}. Expected: {len(expected_args)}'}
+            except TypeError as e:
+                response = {'error': f'Invalid arguments: {arguments}. Error: {str(e)}'}
         else:
-            return {'error': f'Unknown operation: {operation}. Available operations: {", ".join(self.operations.keys())}'}
+            response = {'error': f'Unknown operation: {operation}. Available operations: {", ".join(self.operations.keys())}'}
+        return response
 
     def create(self, arguments):
         path, content = arguments.split(',')

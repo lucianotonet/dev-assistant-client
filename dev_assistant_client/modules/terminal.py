@@ -8,12 +8,12 @@ class TerminalModule:
     def __init__(self):
         self.operations = {
             "list": self.list_dir,
-            "change_directory": self.change_directory,
-            "create_directory": self.create_directory,
-            "remove_directory": self.remove_directory,
-            "copy": self.copy,
-            "move": self.move,
-            "remove": self.remove,
+            "cd": self.change_directory,
+            "mkdir": self.create_directory,
+            "rmdir": self.remove_directory,
+            "cp": self.copy,
+            "mv": self.move,
+            "rm": self.remove,
             "rename": self.rename,
         }
 
@@ -22,32 +22,23 @@ class TerminalModule:
         if operation_func:
             return operation_func(arguments)
         else:
-            # If operation is not in the predefined list, try to execute it as a shell command
-            try:
-                if arguments:
-                    return self.run(operation, arguments)
-                else:
-                    return self.run(operation)
-            except Exception as e:
-                logging.error(f'Failed to execute operation: {operation}. Error: {str(e)}')
-                return None
+            return self.run(operation, arguments)
 
     def run(self, command, arguments=None):
         try:
-            process = subprocess.Popen([command] + arguments if arguments else [command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            process = subprocess.Popen([command] + (arguments if arguments else []), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, error = process.communicate()
             if process.returncode != 0:
                 logging.error(error.decode('utf-8'))
                 return None
-            return output.decode('utf-8')
+            return output.decode('utf-8').strip()
         except subprocess.SubprocessError as e:
             logging.error(str(e))
             return None
 
-    def list_dir(self, directory=None):
+    def list_dir(self, directory='.'):
         try:
-            path = Path(directory if directory else '.')
-            return '\n'.join([str(file) for file in path.iterdir()])
+            return '\n'.join([str(file) for file in Path(directory).iterdir()])
         except OSError as e:
             logging.error(str(e))
             return None
