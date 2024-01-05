@@ -7,7 +7,6 @@ from pathlib import Path
 class TerminalModule:
     def __init__(self):
         self.operations = {
-            "run": self.run,
             "list": self.list_dir,
             "change_directory": self.change_directory,
             "create_directory": self.create_directory,
@@ -23,8 +22,15 @@ class TerminalModule:
         if operation_func:
             return operation_func(arguments)
         else:
-            logging.error(f'Unknown operation: {operation}')
-            return None
+            # If operation is not in the predefined list, try to execute it as a shell command
+            try:
+                if arguments:
+                    return self.run(operation, arguments)
+                else:
+                    return self.run(operation)
+            except Exception as e:
+                logging.error(f'Failed to execute operation: {operation}. Error: {str(e)}')
+                return None
 
     def run(self, command, arguments=None):
         try:
