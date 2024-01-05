@@ -31,7 +31,7 @@ class GitModule:
             else:
                 return operation_func()
         else:
-            return {'error': f'Unknown operation: {operation}'}
+            return {'error': f'Unknown operation: {operation}. Available operations: {", ".join(self.operations.keys())}'}
 
     def git_operation(self, operation, directory, *args, **kwargs):
         try:
