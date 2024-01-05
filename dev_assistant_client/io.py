@@ -27,7 +27,11 @@ class IOAssistant:
         module = instruction.get("module").lower()
         request = instruction.get("request")
         operation = request.get("operation")
-        arguments = request.get("arguments") if isinstance(request.get("arguments"), list) else [request.get("arguments")]
+        arguments = request.get("arguments")
+        if arguments is not None:
+            arguments = arguments if isinstance(arguments, list) else [arguments]
+        else:
+            arguments = []
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
