@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import unidiff
@@ -38,7 +39,8 @@ class FilesModule:
                 response = {'error': f'Invalid arguments: {arguments}. Error: {str(e)}'}
         else:
             response = {'error': f'Unknown operation: {operation}. Available operations: {", ".join(self.operations.keys())}'}
-        return response
+        # return response in json format
+        return json.dumps(response, ensure_ascii=False)
 
     def create(self, arguments):
         path, content = arguments.split(',')

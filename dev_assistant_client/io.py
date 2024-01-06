@@ -37,19 +37,18 @@ class IOAssistant:
             try:
                 if module == "files":
                     response = FilesModule().execute(operation, arguments)
-                elif module == "git":
-                    response = GitModule().execute(operation, arguments)
                 elif module == "terminal":
                     response = TerminalModule().execute(operation, arguments)
+                elif module == "git":
+                    response = GitModule().execute(operation, arguments)
                 else:
                     response = "Invalid module or operation"
                 break
             except Exception as e:
                 logging.error("Error", e)
-                print(now(), "Error: ", e)
                 print(Fore.LIGHTRED_EX + "ERROR:" + Style.RESET_ALL)
                 print(e)
-                return e
+                return f"Error on the CLI: {e}"
 
         print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
         return response
@@ -59,7 +58,7 @@ class IOAssistant:
         print(
             now(),
             "Receiving request ...",
-            message.data.get("feedback"),
+            message.data.get("feedback") or "",
             sep="\t",
         )
 
@@ -68,17 +67,20 @@ class IOAssistant:
         try:
             await IOAssistant.set_as_processing(instruction)
         except Exception as e:
-            print(now(), "Error: ", e)
+            logging.error(f"Error while processing message: {e}")
+            return f"Error: {e}"
 
         try:
             response_data = IOAssistant.execute_request(instruction)
-
-            token = read_token()
-            HEADERS["Authorization"] = f'Bearer ${token}'
-
-            IOAssistant.send_response(instruction, response_data)
         except Exception as e:
-            print(now(), "Error: ", e)
+            logging.error(f"Error while processing message: {e}")
+        
+        HEADERS["Authorization"] = f'Bearer {read_token()}'
+
+        error_response = response_data.get("error") if isinstance(response_data, dict) else None
+        response_to_send = error_response if error_response else response_data
+            
+        IOAssistant.send_response(instruction, response_to_send)
 
     @staticmethod
     async def set_as_processing(instruction):

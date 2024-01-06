@@ -1,88 +1,97 @@
-import os
-from git.repo import Repo
-from git.exc import GitCommandError
+import json
+import logging
+import subprocess
 
 class GitModule:
-    def __init__(self, devassistant_username='Dev Assistant AI', devassistant_email='devassistant@tonet.dev'):
-        self.devassistant_username = devassistant_username
-        self.devassistant_email = devassistant_email
-
+    def __init__(self, working_directory=None):
+        self.module = "git"
+        self.working_directory = working_directory
         self.operations = {
-            'init': self.git_init,
-            'add': self.git_add,
-            'commit': self.git_commit,
-            'pull': self.git_pull,
-            'checkout': self.git_checkout,
-            'push': self.git_push,
-            'status': self.git_status,
-            'diff': self.git_diff,
-            'reset': self.git_reset,
-            'log': self.git_log,
-            'clone': self.git_clone,
-            'branch': self.git_branch,
-            'merge': self.git_merge
+            "clone": self.clone,
+            "status": self.status,
+            "checkout": self.checkout,
+            "add": self.add,
+            "commit": self.commit,
+            "push": self.push,
+            "pull": self.pull,
+            "fetch": self.fetch,
+            "merge": self.merge,
+            "rebase": self.rebase,
+            "reset": self.reset,
+            "log": self.log
         }
-
+        logging.basicConfig(level=logging.INFO)
+        
     def execute(self, operation, arguments=None):
-        operation_func = self.operations.get(operation)
-        if operation_func:
-            if arguments:
-                return operation_func(*arguments)
-            else:
-                return operation_func()
+        if operation in self.operations:
+            try:
+                result = self.operations[operation](arguments if arguments else [])
+                logging.info(f"{operation} executed successfully")
+                return result
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Command failed: {e.cmd}")
+                return e.output.decode("utf-8")
+            except Exception as e:
+                logging.exception("Unexpected error")
+                return str(e)
         else:
-            return {'error': f'Unknown operation: {operation}. Available operations: {", ".join(self.operations.keys())}'}
+            return json.dumps({"error": f"Unsupported operation: {operation}"})
 
-    def git_operation(self, operation, directory, *args, **kwargs):
-        try:
-            repo_path = directory or os.getcwd()
-            repo = Repo(repo_path)
-            result = getattr(repo.git, operation)(*args, **kwargs)
-            return {"message": f"Repo {operation} in {repo_path}", "result": result}
-        except GitCommandError as e:
-            return {"error": str(e)}
-        except Exception as e:
-            return {"error": str(e)}
+    def clone(self, arguments):
+        if not arguments or len(arguments) < 1:
+            raise ValueError("You must specify a repository to clone.")
+        return self._run_git_command(["clone"] + arguments)
 
-    def git_init(self, directory):
-        return self.git_operation('init', directory)
+    def _run_git_command(self, command):
+        full_command = ["git"] + command
+        logging.info(f"Running command: {' '.join(full_command)}")
+        print(f"Running command: {' '.join(full_command)}")
+        response = subprocess.check_output(
+            full_command, cwd=self.working_directory, stderr=subprocess.STDOUT
+        )
+        return json.dumps(response.decode("utf-8"))
 
-    def git_add(self, directory):
-        return self.git_operation('add', directory, '.')
+    def checkout(self, arguments):
+        if not arguments:
+            raise ValueError("You must specify a branch or commit to checkout.")
+        return self._run_git_command(["checkout"] + arguments)
 
-    def git_commit(self, message, directory, username=None, email=None):
-        author = f'{username} <{email}>' if username and email else f'{self.devassistant_username} <{self.devassistant_email}>'
-        result = self.git_operation('commit', directory, '-m', message, author=author)
-        if "error" in result:
-            return {"error": f"Commit failed: {result['error']}"}
-        return result
+    def add(self, arguments):
+        if not arguments:
+            raise ValueError("You must specify a file or pattern to add.")
+        return self._run_git_command(["add"] + arguments)
 
-    def git_push(self, remote, branch, directory):
-        return self.git_operation('push', directory, remote, branch)
+    def commit(self, arguments):
+        if not arguments or "--message" not in arguments:
+            raise ValueError("You must specify a commit message using '--message'.")
+        return self._run_git_command(["commit"] + arguments)
 
-    def git_status(self, directory):
-        return self.git_operation('status', directory)
+    def push(self, arguments):
+        return self._run_git_command(["push"] + arguments)
 
-    def git_diff(self, file_path, directory):
-        return self.git_operation('diff', directory, file_path)
+    def pull(self, arguments):
+        return self._run_git_command(["pull"] + arguments)
 
-    def git_reset(self, path):
-        return self.git_operation('reset', path)
+    def fetch(self, arguments):
+        return self._run_git_command(["fetch"] + arguments)
 
-    def git_log(self, directory):
-        return self.git_operation('log', directory)
+    def merge(self, arguments):
+        if not arguments:
+            raise ValueError("You must specify a branch to merge.")
+        return self._run_git_command(["merge"] + arguments)
 
-    def git_pull(self, remote, branch, directory):
-        return self.git_operation('pull', directory, remote, branch)
+    def rebase(self, arguments):
+        if not arguments:
+            raise ValueError("You must specify a branch to rebase onto.")
+        return self._run_git_command(["rebase"] + arguments)
 
-    def git_checkout(self, branch, directory):
-        return self.git_operation('checkout', directory, branch)
+    def reset(self, arguments):
+        return self._run_git_command(["reset"] + arguments)
 
-    def git_clone(self, repository, directory):
-        return self.git_operation('clone', directory, repository)
+    def log(self, arguments):
+        return self._run_git_command(["log"] + arguments)
 
-    def git_branch(self, branch, directory):
-        return self.git_operation('branch', directory, branch)
+    def status(self, arguments):
+        return self._run_git_command(["status"] + arguments)
 
-    def git_merge(self, branch, directory):
-        return self.git_operation('merge', directory, branch)
+
