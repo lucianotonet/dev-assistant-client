@@ -79,6 +79,8 @@ class IOAssistant:
 
         error_response = response_data.get("error") if isinstance(response_data, dict) else None
         response_to_send = error_response if error_response else response_data
+        
+        instruction["status"] = "failed" if error_response else "completed"
             
         IOAssistant.send_response(instruction, response_to_send)
 
@@ -128,7 +130,7 @@ class IOAssistant:
                 api_client = APIClient(f"{CALLBACK_URL or API_URL}")
 
                 return_data = {
-                    "status": "completed",
+                    "status": instruction.get("status"),
                     "response": data
                 }
 

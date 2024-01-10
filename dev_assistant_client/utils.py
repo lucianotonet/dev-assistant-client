@@ -28,6 +28,7 @@ TOKEN_FILE = DOTFILES_DIR / "auth_token"
 USER_DATA_FILE = DOTFILES_DIR / "user_data"
 ABLY_TOKEN_FILE = DOTFILES_DIR / "ably_token"
 CLIENT_ID_FILE = DOTFILES_DIR / "client_id"
+TERMINAL_CWD_FILE = DOTFILES_DIR / "terminal_cwd"
 
 # Get certificate file and key file paths from environment variables
 CERT_FILE = os.getenv("CERT_FILE", "")
