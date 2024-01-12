@@ -54,10 +54,10 @@ def git_commit_and_tag(new_version: str):
             update_pyproject_file(new_version)
         subprocess.run(["git", "tag", f"v{new_version}"], check=True)
         subprocess.run(["git", "push", "origin", "HEAD", "--tags"], check=True)
-        subprocess.run(["git", "push", "origin", "main"], check=True)
     except subprocess.CalledProcessError as e:
         logging.error(f"An error occurred while committing and tagging: {e}")
     finally:
+        subprocess.run(["git", "push", "origin", "main"], check=True)
         # Use the new GitHub Actions set-output syntax
         print(f"::set-output name=tag::v{new_version}")
 
