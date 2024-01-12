@@ -60,6 +60,10 @@ def git_commit_and_tag(new_version):
         print("Git commit and tag created and pushed.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while committing and tagging: {e}")
+    # Correção para a nova sintaxe do GitHub Actions
+    subprocess.run(f"echo 'tag=v{new_version}' >> $GITHUB_ENV", shell=True, check=True)
+    # Definindo o output para o GitHub Actions
+    print(f"::set-output name=tag::v{new_version}")
         
 if __name__ == "__main__":
     print("Starting the version update process...")

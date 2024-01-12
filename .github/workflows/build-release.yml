@@ -24,6 +24,7 @@ jobs:
           pip install poetry toml pyinstaller
 
       - name: Bump Version and Push Tag
+        id: version_bump_and_release  # Certifique-se de que este ID corresponde ao usado no with do create-release
         run: python version_bump.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
