@@ -11,10 +11,6 @@ def get_local_version() -> str:
         data = toml.load(file)
     return data['tool']['poetry']['version']
 
-def get_online_version() -> str:
-    # Placeholder function to get the latest version from an online source
-    return '0.0.0'
-
 def get_latest_git_tag() -> str:
     try:
         tag = subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0'], text=True).strip()
@@ -22,9 +18,19 @@ def get_latest_git_tag() -> str:
         tag = 'v0.0.0'
     return tag.lstrip('v')
 
-def increment_version(local: str, online: str, git_tag: str) -> str:
-    # Increment the version number based on the specific versioning scheme
-    return str(max(version.parse(local), version.parse(online), version.parse(git_tag)))
+def increment_version(ver: str) -> str:
+    v = version.parse(ver)
+    if isinstance(v, version.Version):
+        return f"{v.major}.{v.minor}.{v.micro + 1}" # Incrementa o micro
+    else:
+        return '0.0.1'
+
+def tag_exists(tag: str) -> bool:
+    try:
+        subprocess.check_output(['git', 'rev-parse', f'v{tag}'], text=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
 def update_file_version(file_path: Path, new_version: str):
     with open(file_path, 'r') as file:
@@ -44,6 +50,11 @@ def git_commit_and_tag(new_version: str):
         subprocess.run(["git", "config", "user.email", "devassistant@tonet.dev"], check=True)
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
         subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
+        # Check if the tag exists and increment version if necessary
+        while tag_exists(new_version):
+            logging.info(f"Tag v{new_version} already exists. Incrementing version...")
+            new_version = increment_version(new_version)
+            update_pyproject_file(new_version)
         subprocess.run(["git", "tag", f"v{new_version}"], check=True)
         subprocess.run(["git", "push", "origin", "HEAD", "--tags"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
@@ -55,11 +66,8 @@ def git_commit_and_tag(new_version: str):
 if __name__ == "__main__":
     logging.info("Starting the version update process...")
     local_version = get_local_version()
-    online_version = get_online_version()
     git_tag_version = get_latest_git_tag()
-    new_version = increment_version(local_version, online_version, git_tag_version)
-    while version.parse(new_version) <= version.parse(git_tag_version):
-        new_version = increment_version(new_version, online_version, git_tag_version)
+    new_version = increment_version(max(local_version, git_tag_version, key=version.parse))
     update_pyproject_file(new_version)
     git_commit_and_tag(new_version)
     logging.info("Version update process completed.")
