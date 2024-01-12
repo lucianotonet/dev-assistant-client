@@ -10,6 +10,7 @@ dist/
 build/
 *.egg-info/
 *.eggs/
+.pypirc
 
 # Ambientes virtuais
 venv/

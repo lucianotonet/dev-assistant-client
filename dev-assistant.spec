@@ -3,7 +3,7 @@
 
 a = Analysis(
     ['dev_assistant_client\\dev_assistant_client.py'],
-    pathex=['./dev_assistant_client'],
+    pathex=[],
     binaries=[],
     datas=[],
     hiddenimports=[],
