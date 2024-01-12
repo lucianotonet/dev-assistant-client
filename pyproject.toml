@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "dev-assistant-client"
-version = "0.2.43"
+version = "0.2.47"
 description = "Dev Assistant client"
 authors = [ "Luciano T. <tonetlds@gmail.com>",]
 readme = "README.md"
