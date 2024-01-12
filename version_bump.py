@@ -60,7 +60,7 @@ def git_commit_and_tag(new_version):
         logging.info("Git commit and tag created and pushed.")
     except subprocess.CalledProcessError as e:
         logging.error(f"An error occurred while committing and tagging: {e}")
-    subprocess.run(f"echo ::set-output name=tag::v${new_version}", shell=True, check=True)
+    subprocess.run(f"echo ::set-output name=tag::v{new_version}", shell=True, check=True)
         
 if __name__ == "__main__":
     logging.info("Starting the version update process...")
