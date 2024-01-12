@@ -4,9 +4,9 @@ import pkg_resources
 import requests
 from ably import AblyRealtime
 from colorama import Fore, Style
-from dev_assistant_client.config import api_client
-from dev_assistant_client.io import IOAssistant
-from dev_assistant_client.utils import get_client_id, dd, now, read_token
+from .config import api_client
+from .io import IOAssistant
+from .utils import get_client_id, dd, now, read_token
 
 class AblyHandler:
     def init_ably(self):
@@ -81,7 +81,7 @@ class AblyHandler:
               
         # Keep the connection alive
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(1)  # This keeps the connection alive
         
     async def handle_ably_message(self, message):
                

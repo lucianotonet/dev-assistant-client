@@ -4,12 +4,12 @@ import os
 import pkg_resources
 from time import sleep
 from colorama import Fore, Style
-from dev_assistant_client.api_client import APIClient
-from dev_assistant_client.modules.files import FilesModule
-from dev_assistant_client.modules.git import GitModule
-from dev_assistant_client.modules.terminal import TerminalModule
-from dev_assistant_client.client_auth import ClientAuth
-from dev_assistant_client.utils import CALLBACK_URL, CERT_FILE, HEADERS, API_URL, CLIENT_ID, KEY_FILE, dd, now, read_token
+from .api_client import APIClient
+from .modules.files import FilesModule
+from .modules.git import GitModule
+from .modules.terminal import TerminalModule
+from .client_auth import ClientAuth
+from .utils import CALLBACK_URL, CERT_FILE, HEADERS, API_URL, CLIENT_ID, KEY_FILE, dd, now, read_token
 
 class IOAssistant:
     MAX_RETRIES = 3

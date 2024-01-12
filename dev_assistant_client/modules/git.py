@@ -1,7 +1,7 @@
 import json
 import logging
 import subprocess
-from dev_assistant_client.utils import TERMINAL_CWD_FILE
+from ..utils import TERMINAL_CWD_FILE
 
 class GitModule:
     def __init__(self, instruction):

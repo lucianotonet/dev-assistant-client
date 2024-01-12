@@ -4,7 +4,7 @@ import subprocess
 import logging
 import shlex
 from pathlib import Path
-from dev_assistant_client.utils import TERMINAL_CWD_FILE
+from ..utils import TERMINAL_CWD_FILE
 import platform
 import glob
 

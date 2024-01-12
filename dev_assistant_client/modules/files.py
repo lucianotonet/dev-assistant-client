@@ -5,7 +5,7 @@ import shutil
 import unidiff
 import logging
 from pathlib import Path
-from dev_assistant_client.utils import TERMINAL_CWD_FILE
+from ..utils import TERMINAL_CWD_FILE
         
 
 # Setting up basic logging

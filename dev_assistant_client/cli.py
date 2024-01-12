@@ -1,18 +1,18 @@
-import logging
 import argparse
 import os
 from colorama import Fore, Style
 from dotenv import load_dotenv
+import logging
 import requests
 from packaging import version
 from .utils import dd
 import pkg_resources
 
-from dev_assistant_client.dev_assistant_client import DevAssistant
+from .dev_assistant_client import DevAssistant
 
 load_dotenv()
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 if os.getenv('DEBUG', 'False') != 'True':
     logging.disable()
 
@@ -23,9 +23,12 @@ def check_for_update():
     Returns:
         bool: True if an update is available, False otherwise.
     """
-    
-    response = requests.get(f"https://pypi.org/pypi/dev-assistant-client/json")
-    latest_version = response.json()["info"]["version"]
+    try:
+        response = requests.get(f"https://pypi.org/pypi/dev-assistant-client/json")
+        latest_version = response.json()["info"]["version"]
+    except Exception as e:
+        logging.error("Failed to check for updates: %s", e)
+        return False
 
     current_version = pkg_resources.get_distribution("dev-assistant-client").version
 
@@ -40,9 +43,8 @@ async def cli():
     try:
         if check_for_update():
             print(Fore.LIGHTYELLOW_EX + "📦 New version available! "  + Style.RESET_ALL + "\nPlease run 'pip install --upgrade dev-assistant-client' to upgrade." )
-    except:
-        # Fine if this fails
-        await DevAssistant().run()
+    except Exception as e:
+        logging.error("Failed to check for updates: %s", e)
 
     DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
@@ -54,11 +56,12 @@ async def cli():
     parser.add_argument(
         "-v", "--version", action="store_true", help="show program's version number and exit"
     )
-    parser.add_argument(
-        "-x", "--close", action="store_true", help="close the connection with the server"
-    )
     
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except Exception as e:
+        logging.error("Failed to parse arguments: %s", e)
+        return
 
     if args.version:
         print("Dev Assistant", pkg_resources.get_distribution("dev-assistant-client").version)
@@ -66,4 +69,15 @@ async def cli():
     if args.debug:
         logging.disable(0)
 
-    await DevAssistant().run()
+    try:
+        dev_assistant = DevAssistant()
+        await dev_assistant.run()
+
+    except KeyboardInterrupt:
+        print("\nInterrupção pelo usuário, encerrando...")
+        # Close resources and cancel pending tasks
+        await dev_assistant.close_resources()
+        return  # Encerra a função CLI
+
+    except Exception as e:
+        logging.error("Falha ao executar DevAssistant: %s", e)
