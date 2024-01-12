@@ -32,7 +32,7 @@ def bump_version(local_version, online_version, git_tag_version):
     logging.info("Checking versions...")
     max_version = max(version.parse(local_version), version.parse(online_version), version.parse(git_tag_version))
     logging.info("Incrementing the version...")
-    version_parts = max_version.split('.')
+    version_parts = str(max_version).split('.')
     version_parts[-1] = str(int(version_parts[-1]) + 1)
     new_version = '.'.join(version_parts)
     logging.info("New version generated.")
