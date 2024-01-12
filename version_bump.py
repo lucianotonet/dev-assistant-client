@@ -13,24 +13,21 @@ def get_local_version() -> str:
 
 def get_latest_git_tag() -> str:
     try:
-        tag = subprocess.check_output(['git', 'describe', '--tags', '--abbrev=0'], text=True).strip()
+        tags = subprocess.check_output(['git', 'tag'], text=True).strip().split('\n')
+        # Filter out empty strings and sort in descending order
+        tags = sorted(filter(None, tags), key=lambda t: version.parse(t.lstrip('v')), reverse=True)
+        if tags:
+            return tags[0].lstrip('v')
     except subprocess.CalledProcessError:
-        tag = 'v0.0.0'
-    return tag.lstrip('v')
+        pass
+    return '0.0.0'
 
 def increment_version(ver: str) -> str:
     v = version.parse(ver)
     if isinstance(v, version.Version):
-        return f"{v.major}.{v.minor}.{v.micro + 1}" # Incrementa o micro
+        return f"{v.major}.{v.minor}.{v.micro + 1}"
     else:
         return '0.0.1'
-
-def tag_exists(tag: str) -> bool:
-    try:
-        subprocess.check_output(['git', 'rev-parse', f'v{tag}'], text=True)
-        return True
-    except subprocess.CalledProcessError:
-        return False
 
 def update_file_version(file_path: Path, new_version: str):
     with open(file_path, 'r') as file:
@@ -50,8 +47,8 @@ def git_commit_and_tag(new_version: str):
         subprocess.run(["git", "config", "user.email", "devassistant@tonet.dev"], check=True)
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
         subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
-        # Check if the tag exists and increment version if necessary
-        while tag_exists(new_version):
+        # Increment version until a unique tag is found
+        while subprocess.run(["git", "tag", "-l", f"v{new_version}"], capture_output=True, text=True).stdout.strip():
             logging.info(f"Tag v{new_version} already exists. Incrementing version...")
             new_version = increment_version(new_version)
             update_pyproject_file(new_version)
@@ -61,7 +58,8 @@ def git_commit_and_tag(new_version: str):
     except subprocess.CalledProcessError as e:
         logging.error(f"An error occurred while committing and tagging: {e}")
     finally:
-        subprocess.run(f"echo ::set-output name=tag::v{new_version}", shell=True, check=True)
+        # Use the new GitHub Actions set-output syntax
+        print(f"::set-output name=tag::v{new_version}")
 
 if __name__ == "__main__":
     logging.info("Starting the version update process...")
