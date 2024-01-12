@@ -1,3 +1,4 @@
+import os
 import subprocess
 import toml
 import requests
@@ -50,7 +51,6 @@ def update_pyproject_file(new_version):
 def git_commit_and_tag(new_version):
     print("Committing new version and creating git tag...")
     try:
-        # Configurações locais para o repositório do GitHub Actions
         subprocess.run(["git", "config", "user.name", "Dev Assistant AI"], check=True)
         subprocess.run(["git", "config", "user.email", "devassistant@tonet.dev"], check=True)
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
@@ -60,10 +60,7 @@ def git_commit_and_tag(new_version):
         print("Git commit and tag created and pushed.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while committing and tagging: {e}")
-    # Correção para a nova sintaxe do GitHub Actions
-    subprocess.run(f"echo 'tag=v{new_version}' >> $GITHUB_ENV", shell=True, check=True)
-    # Definindo o output para o GitHub Actions
-    print(f"::set-output name=tag::v{new_version}")
+    subprocess.run(f"echo ::set-output name=tag::v${new_version}", shell=True, check=True)
         
 if __name__ == "__main__":
     print("Starting the version update process...")

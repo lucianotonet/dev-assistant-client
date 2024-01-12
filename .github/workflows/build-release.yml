@@ -38,6 +38,7 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.version_bump_and_release.outputs.tag }}
         with:
           tag_name: ${{ steps.version_bump_and_release.outputs.tag }}
           release_name: Release ${{ steps.version_bump_and_release.outputs.tag }}
