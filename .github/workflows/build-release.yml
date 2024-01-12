@@ -27,7 +27,7 @@ jobs:
         id: version_bump_and_release  # Certifique-se de que este ID corresponde ao usado no with do create-release
         run: python version_bump.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Build EXE
         run: |
@@ -37,7 +37,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
           tag: ${{ steps.version_bump_and_release.outputs.tag }}
         with:
           tag_name: ${{ steps.version_bump_and_release.outputs.tag }}
@@ -46,7 +46,7 @@ jobs:
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/dev-assistant.exe
