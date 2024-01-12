@@ -1,0 +1,33 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry toml pyinstaller
+
+      - name: Build EXE
+        run: |
+          poetry run pyinstaller ./dev_assistant_client/dev_assistant_client.py --name dev-assistant --onefile --noconfirm --clean --icon=./icon.ico
+
+      - name: Bump Version and Push Tag
+        run: python version_bump.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
