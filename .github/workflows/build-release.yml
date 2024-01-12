@@ -12,21 +12,27 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
+
+      - name: Install and Upgrade pip and Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry toml
+
       - name: Bump Version and Push Tag
         run: python version_bump.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build EXE
         run: |
-          python -m pip install --upgrade pip
-          pip install poetry
           poetry run pyinstaller ./dev_assistant_client/dev_assistant_client.py --name dev-assistant --onefile --noconfirm --clean --icon=./icon.ico
+
       - name: Create and Upload Release
-        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           files: ./dist/dev-assistant.exe
