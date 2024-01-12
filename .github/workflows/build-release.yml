@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'pyproject.toml'  # Ignora mudanças apenas neste arquivo
 
 jobs:
   version_bump_and_release:
@@ -24,7 +26,7 @@ jobs:
           pip install poetry toml pyinstaller
 
       - name: Bump Version and Push Tag
-        id: version_bump_and_release  # Certifique-se de que este ID corresponde ao usado no with do create-release
+        id: version_bump_and_release
         run: python version_bump.py
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}

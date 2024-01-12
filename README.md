@@ -48,7 +48,7 @@ If everything runs well, you will see the Dev Assistant CLI presentation and a u
 ```
 
         ╭─────╮   Dev Assistant
-        │ >_< │   v0.2.44
+        │ >_< │   v0.2.45
         ╰─────╯   https://devassistant.tonet.dev
 
 ›       Connecting...           Connected!
