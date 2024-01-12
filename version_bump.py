@@ -42,18 +42,24 @@ def git_commit_and_tag(new_version: str):
         subprocess.run(["git", "config", "user.name", "Dev Assistant AI"], check=True)
         subprocess.run(["git", "config", "user.email", "devassistant@tonet.dev"], check=True)
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
-        subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
-        while True:
-            try:
-                subprocess.run(["git", "tag", "-d", f"v{new_version}"], check=True)
-                subprocess.run(["git", "tag", f"v{new_version}"], check=True)
-                break
-            except subprocess.CalledProcessError:
-                new_version = increment_version(new_version, '0.0.0', '0.0.0')
-                continue
-        subprocess.run(["git", "push", "origin", "HEAD", "--tags"], check=True)
-        subprocess.run(["git", "push", "origin", "main"], check=True)
-        subprocess.run(f"echo ::set-output name=tag::v{new_version}", shell=True, check=True)
+        try:
+            subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
+            while True:
+                try:
+                    subprocess.run(["git", "tag", f"v{new_version}"], check=True)
+                    break
+                except subprocess.CalledProcessError:
+                    new_version = increment_version(new_version, '0.0.0', '0.0.0')
+                    continue
+            subprocess.run(["git", "push", "origin", "HEAD", "--tags"], check=True)
+            subprocess.run(["git", "push", "origin", "main"], check=True)
+            subprocess.run(f"echo ::set-output name=tag::v{new_version}", shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            if "tag 'v" in str(e) and "' already exists" in str(e):
+                logging.warning(f"Tag 'v{new_version}' already exists. Calling the version updater again.")
+                git_commit_and_tag(increment_version(new_version, '0.0.0', '0.0.0'))
+            else:
+                logging.error(f"An error occurred while committing and tagging: {e}")
     except subprocess.CalledProcessError as e:
         logging.error(f"An error occurred while committing and tagging: {e}")
 
