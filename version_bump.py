@@ -1,3 +1,4 @@
+import subprocess
 import toml
 import requests
 from packaging import version
@@ -46,9 +47,26 @@ def update_pyproject_file(new_version):
         toml.dump(pyproject_data, file)
     print("pyproject.toml file updated.")
 
-print("Starting the version update process...")
-local_version = get_local_version()
-online_version = get_online_version()
-new_version = bump_version(local_version, online_version)
-update_pyproject_file(new_version)
-print("Version update process completed.")
+def git_commit_and_tag(new_version):
+    print("Committing new version and creating git tag...")
+    try:
+        # Configurações locais para o repositório do GitHub Actions
+        subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+        subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
+        subprocess.run(["git", "add", "pyproject.toml"], check=True)
+        subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
+        subprocess.run(["git", "tag", f"v{new_version}"], check=True)
+        subprocess.run(["git", "push", "origin", "--tags"], check=True)
+        print("Git commit and tag created and pushed.")
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while committing and tagging: {e}")
+        
+if __name__ == "__main__":
+    print("Starting the version update process...")
+    local_version = get_local_version()
+    online_version = get_online_version()
+    new_version = bump_version(local_version, online_version)
+    if new_version != local_version:
+        update_pyproject_file(new_version)
+        git_commit_and_tag(new_version)
+    print("Version update process completed.")
