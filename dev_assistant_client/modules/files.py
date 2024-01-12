@@ -1,15 +1,28 @@
+
 import json
 import os
 import shutil
 import unidiff
-import inspect
+import logging
+from pathlib import Path
+from dev_assistant_client.utils import TERMINAL_CWD_FILE
+        
+
+# Setting up basic logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class FilesModule:
-    def __init__(self):
+    def __init__(self, instruction):
+        self.client_id = instruction.get("client_id")
+        self.feedback = instruction.get("feedback")
+        self.module = instruction.get("module")
+        self.operation = instruction.get("operation")
+        self.arguments = instruction.get("arguments")
         self.operations = {
             "create": self.create,
             "read": self.read,
             "update": self.update,
+            "append": self.append,
             "delete": self.delete,
             "list": self.list_dir,
             "copy": self.copy,
@@ -19,50 +32,63 @@ class FilesModule:
             "exists": self.exists,
             "is_file": self.is_file,
             "is_dir": self.is_dir,
-            "get_size": self.get_size
+            "get_size": self.get_size,
+            "create_directory": self.create_directory,
+            "set_permissions": self.set_permissions
         }
+        
+        self.cwd_file = TERMINAL_CWD_FILE
+        self.current_dir = self._load_cwd()  # Load or default to current working directory
     
-    def execute(self, operation, arguments=None):
-        arguments = arguments or []
-        operation_func = self.operations.get(operation)
-        response = None
-        if operation_func:
-            try:
-                expected_args = inspect.signature(operation_func).parameters
-                if isinstance(arguments, list) and len(arguments) == len(expected_args) and None not in arguments:
-                    response = operation_func(*arguments)
-                elif not isinstance(arguments, list) and len(expected_args) == 1 and arguments is not None:
-                    response = operation_func(arguments)
-                else:
-                    response = {'error': f'Invalid number of arguments: {arguments}. Expected: {len(expected_args)}'}
-            except TypeError as e:
-                response = {'error': f'Invalid arguments: {arguments}. Error: {str(e)}'}
-        else:
-            response = {'error': f'Unknown operation: {operation}. Available operations: {", ".join(self.operations.keys())}'}
-        # return response in json format
-        return json.dumps(response, ensure_ascii=False)
+    def execute(self):
+        operation_func = self.operations.get(self.operation, self.unknown_operation)
+        try:
+            execute_response = operation_func(*self.arguments)
+            return json.dumps(execute_response)
+        except TypeError as e:
+            return json.dumps({'error': f'Invalid arguments for {self.operation}: {str(e)}'}, ensure_ascii=False)
+        except FileNotFoundError as e:
+            return json.dumps({'error': str(e)}, ensure_ascii=False)
+        except Exception as e:
+            return json.dumps({'error': f'Error in {self.operation}: {str(e)}'}, ensure_ascii=False)
 
-    def create(self, arguments):
-        path, content = arguments.split(',')
-        directory = os.path.dirname(path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+    def unknown_operation(self, *args):
+        valid_operations = list(self.operations.keys())
+        return json.dumps({'error': f'Unknown operation: {self.operation}', 'valid_operations': valid_operations})
 
-        with open(path, "w", encoding="utf-8") as file:
+    def _load_cwd(self):
+        """Load the saved current working directory, or default to the system's CWD."""
+        try:
+            if Path(self.cwd_file).exists():
+                with open(self.cwd_file, 'r') as file:
+                    saved_dir = file.read().strip()
+                    if Path(saved_dir).exists():
+                        return saved_dir
+        except Exception as e:
+            logging.error(f"Error loading saved CWD: {e}")
+        return os.getcwd()
+    
+    def path_exists(self, path):
+        return os.path.exists(path)
+
+    def create(self, path, content=None):
+        absolute_path = Path(self.current_dir, path).resolve()
+        directory = absolute_path.parent
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=True)
+        with open(absolute_path, "w", encoding="utf-8") as file:
             if content:
                 file.write(content)
-        return {"message": f"File created at {path}"}
+        return {"message": f"File created at {absolute_path}"}
 
     def read(self, path):
-        if not os.path.exists(path):
-            return {"error": f"Path does not exist: {path}"}
-
-        if os.path.isdir(path):
-            return self.list_dir(path)
-
-        with open(path, "r", encoding="utf-8") as file:
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"Path does not exist: {absolute_path}"}
+        if absolute_path.is_dir():
+            return self.list_dir(absolute_path)
+        with open(absolute_path, "r", encoding="utf-8") as file:
             content = file.read()
-
         return {"content": content}
 
     def update(self, arguments):
@@ -75,54 +101,83 @@ class FilesModule:
 
         return {"message": f"File updated at {path}"}
 
-    def delete(self, path):
-        if not os.path.exists(path):
-            return {"error": f"File does not exist: {path}"}
+    def append(self, path, content=""):
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"File does not exist: {absolute_path}"}
 
-        os.remove(path)
-        return {"message": f"File deleted at {path}"}
+        with open(absolute_path, "a", encoding="utf-8") as file:
+            file.write(content)
+
+        return {"message": f"Content appended to file at {absolute_path}"}
+    
+    def delete(self, path):
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"File does not exist: {absolute_path}"}
+
+        os.remove(absolute_path)
+        return {"message": f"File deleted at {absolute_path}"}
 
     def list_dir(self, path):
-        if not os.path.exists(path):
-            return {"error": f"Directory does not exist: {path}"}
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"Directory does not exist: {absolute_path}"}
 
         try:
-            files = os.listdir(path)
+            files = os.listdir(absolute_path)
         except Exception as e:
             return {"error": f"Error listing directory: {e}"}
         
         return {"files": files}
 
-    def copy(self, arguments):
-        source, destination = arguments.split(',')
-        if not os.path.exists(source):
-            return {"error": f"File does not exist: {source}"}
+    def copy(self, source, destination):
+        try:
+            absolute_source = Path(self.current_dir, source).resolve()
+            absolute_destination = Path(self.current_dir, destination).resolve()
+            if not self.path_exists(absolute_source):
+                return {"error": f"File does not exist: {absolute_source}"}
 
-        shutil.copy(source, destination)
-        return {"message": f"File copied from {source} to {destination}"}
+            shutil.copy(absolute_source, absolute_destination)
+            return {"message": f"File copied from {absolute_source} to {absolute_destination}"}
+        except Exception as e:
+            return {"error": f"Error copying file: {e}"}
 
-    def move(self, arguments):
-        source, destination = arguments.split(',')
-        if not os.path.exists(source):
-            return {"error": f"File does not exist: {source}"}
+    def move(self, source, destination):
+        try:
+            absolute_source = Path(self.current_dir, source).resolve()
+            absolute_destination = Path(self.current_dir, destination).resolve()
+            if not self.path_exists(absolute_source):
+                return {"error": f"File does not exist: {absolute_source}"}
 
-        shutil.move(source, destination)
-        return {"message": f"File moved from {source} to {destination}"}
+            shutil.move(absolute_source, absolute_destination)
+            return {"message": f"File moved from {absolute_source} to {absolute_destination}"}
+        except Exception as e:
+            return {"error": f"Error moving file: {e}"}
 
-    def rename(self, arguments):
-        source, destination = arguments.split(',')
-        if not os.path.exists(source):
-            return {"error": f"File does not exist: {source}"}
+    def rename(self, source, destination):
+        try:
+            absolute_source = Path(self.current_dir, source).resolve()
+            absolute_destination = Path(self.current_dir, destination).resolve()
+            if not self.path_exists(absolute_source):
+                return {"error": f"File does not exist: {absolute_source}"}
 
-        os.rename(source, destination)
-        return {"message": f"File renamed from {source} to {destination}"}
+            os.rename(absolute_source, absolute_destination)
+            return {"message": f"File renamed from {absolute_source} to {absolute_destination}"}
+        except Exception as e:
+            return {"error": f"Error renaming file: {e}"}
 
     def apply_diff(self, arguments):
-        path, diff_instructions = arguments.split(',')
-        if not os.path.exists(path):
-            return {"error": f"File does not exist: {path}"}
+        try:
+            path, diff_instructions = arguments.split(',')
+        except ValueError:
+            return {"error": "Invalid arguments. Expected format: 'path,diff_instructions'"}
 
-        with open(path, "r", encoding="utf-8") as file:
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"File does not exist: {absolute_path}"}
+
+        with open(absolute_path, "r", encoding="utf-8") as file:
             original_content = file.read()
 
         # Apply diff instructions using unidiff
@@ -133,19 +188,38 @@ class FilesModule:
                 patched_content = hunk.apply_to(patched_content)
 
         # Save the file after applying the diff
-        with open(path, "w", encoding="utf-8") as file:
+        with open(absolute_path, "w", encoding="utf-8") as file:
             file.write(patched_content)
 
-        return {"message": f"Diff applied to file at {path}"}
+        return {"message": f"Diff applied to file at {absolute_path}"}
 
     def exists(self, path):
-        return {"exists": os.path.exists(path)}
+        absolute_path = Path(self.current_dir, path).resolve()
+        return {"exists": self.path_exists(absolute_path)}
 
     def is_file(self, path):
-        return {"is_file": os.path.isfile(path)}
+        absolute_path = Path(self.current_dir, path).resolve()
+        return {"is_file": self.path_exists(absolute_path) and os.path.isfile(absolute_path)}
 
     def is_dir(self, path):
-        return {"is_dir": os.path.isdir(path)}
+        absolute_path = Path(self.current_dir, path).resolve()
+        return {"is_dir": self.path_exists(absolute_path) and os.path.isdir(absolute_path)}
 
     def get_size(self, path):
-        return {"size": os.path.getsize(path)}
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"File does not exist: {absolute_path}"}
+        return {"size": os.path.getsize(absolute_path)}
+
+    def create_directory(self, path):
+        absolute_path = Path(self.current_dir, path).resolve()
+        absolute_path.mkdir(parents=True, exist_ok=True)
+        return {"message": f"Directory created at {absolute_path}"}
+
+    def set_permissions(self, path, mode):
+        absolute_path = Path(self.current_dir, path).resolve()
+        if not self.path_exists(absolute_path):
+            return {"error": f"File does not exist: {absolute_path}"}
+        os.chmod(absolute_path, mode)
+        return {"message": f"Permissions set for {absolute_path}"}
+

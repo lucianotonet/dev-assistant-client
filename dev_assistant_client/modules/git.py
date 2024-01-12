@@ -1,11 +1,15 @@
 import json
 import logging
 import subprocess
+from dev_assistant_client.utils import TERMINAL_CWD_FILE
 
 class GitModule:
-    def __init__(self, working_directory=None):
-        self.module = "git"
-        self.working_directory = working_directory
+    def __init__(self, instruction):
+        self.client_id = instruction.get("client_id")
+        self.feedback = instruction.get("feedback")
+        self.module = instruction.get("module")
+        self.operation = instruction.get("operation")
+        self.arguments = instruction.get("arguments")
         self.operations = {
             "clone": self.clone,
             "status": self.status,
@@ -20,22 +24,26 @@ class GitModule:
             "reset": self.reset,
             "log": self.log
         }
-        logging.basicConfig(level=logging.INFO)
-        
-    def execute(self, operation, arguments=None):
-        if operation in self.operations:
-            try:
-                result = self.operations[operation](arguments if arguments else [])
-                logging.info(f"{operation} executed successfully")
-                return result
-            except subprocess.CalledProcessError as e:
-                logging.error(f"Command failed: {e.cmd}")
-                return e.output.decode("utf-8")
-            except Exception as e:
-                logging.exception("Unexpected error")
-                return str(e)
-        else:
-            return json.dumps({"error": f"Unsupported operation: {operation}"})
+        self.working_directory = TERMINAL_CWD_FILE
+                    
+    def execute(self):
+        operation = self.operation
+        arguments = self.arguments
+        operation_func = self.operations.get(operation, self.unknown_operation)
+        try:
+            result = operation_func(arguments if arguments else [])
+            logging.info(f"{operation} executed successfully")
+            return result
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Command failed: {e.cmd}")
+            return json.dumps({'error': e.output.decode("utf-8")})
+        except Exception as e:
+            logging.exception("Unexpected error")
+            return json.dumps({'error': str(e)})
+
+    def unknown_operation(self, *args):
+        valid_operations = list(self.operations.keys())
+        return json.dumps({'error': f'Unknown operation: {self.operation}', 'valid_operations': valid_operations})
 
     def clone(self, arguments):
         if not arguments or len(arguments) < 1:
@@ -93,5 +101,4 @@ class GitModule:
 
     def status(self, arguments):
         return self._run_git_command(["status"] + arguments)
-
-
+        

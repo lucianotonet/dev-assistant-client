@@ -18,16 +18,16 @@ class IOAssistant:
     def execute_request(instruction):
         print(
             now(),
-            "Executing task ... ",
+            'Executing request ...',
             sep="\t",
             end="\t",
+            flush=True
         )
 
         response = ""
         module = instruction.get("module").lower()
-        request = instruction.get("request")
-        operation = request.get("operation")
-        arguments = request.get("arguments")
+        operation = instruction.get("operation")
+        arguments = instruction.get("arguments")
         if arguments is not None:
             arguments = arguments if isinstance(arguments, list) else [arguments]
         else:
@@ -36,21 +36,19 @@ class IOAssistant:
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 if module == "files":
-                    response = FilesModule().execute(operation, arguments)
+                    response = FilesModule(instruction).execute()
                 elif module == "terminal":
-                    response = TerminalModule().execute(operation, arguments)
+                    response = TerminalModule(instruction).execute()
                 elif module == "git":
-                    response = GitModule().execute(operation, arguments)
+                    response = GitModule(instruction).execute()
                 else:
-                    response = "Invalid module or operation"
-                break
+                    response = "Invalid module or operation"                
+                print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
             except Exception as e:
-                logging.error("Error", e)
-                print(Fore.LIGHTRED_EX + "ERROR:" + Style.RESET_ALL)
-                print(e)
-                return f"Error on the CLI: {e}"
-
-        print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
+                logging.error("Error executing request", exc_info=True)
+                response = json.dumps({'error': f'Error on the CLI: {str(e)}'}, ensure_ascii=False)
+                print(Fore.LIGHTRED_EX + "Fail ✗" + Style.RESET_ALL)
+                sleep(1)  # wait before retrying
         return response
 
     @staticmethod
@@ -68,12 +66,17 @@ class IOAssistant:
             await IOAssistant.set_as_processing(instruction)
         except Exception as e:
             logging.error(f"Error while processing message: {e}")
-            return f"Error: {e}"
+            response_data = json.dumps({'error': f"Error: {e}"}, ensure_ascii=False)
+            HEADERS["Authorization"] = f'Bearer {read_token()}'
+            instruction["status"] = "failed"
+            IOAssistant.send_response(instruction, response_data)
+            return
 
         try:
-            response_data = IOAssistant.execute_request(instruction)
+            response_data = json.loads(IOAssistant.execute_request(instruction))
         except Exception as e:
             logging.error(f"Error while processing message: {e}")
+            response_data = json.dumps({'error': f'Error on the CLI: {str(e)}'}, ensure_ascii=False)
         
         HEADERS["Authorization"] = f'Bearer {read_token()}'
 
@@ -102,17 +105,17 @@ class IOAssistant:
 
                 if response.status_code in [200, 201, 202, 204]:
                     output = json.loads(response.content.decode("utf-8"))
-                    response = output.get("response")
-                    break
+                    response = [output.get("response")] if output.get("response") is not None else []
+                    print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
+                    return response
                 else:
                     print(now(), "Error: ", response.status_code, json.loads(response.content.decode("utf-8")))
             except Exception as e:
                 print(now(), "Error: ", e)
                 sleep(1)
-            else:
-                return
-        print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
-        return
+
+        print(Fore.LIGHTRED_EX + "Failed after max retries" + Style.RESET_ALL)
+        return None
 
     @staticmethod
     def send_response(instruction, data):
@@ -125,26 +128,25 @@ class IOAssistant:
 
         url = f'/io/{instruction.get("id")}'
 
-        for _ in range(IOAssistant.MAX_RETRIES):
+        for attempt in range(IOAssistant.MAX_RETRIES):
             try:
                 api_client = APIClient(f"{CALLBACK_URL or API_URL}")
 
                 return_data = {
                     "status": instruction.get("status"),
-                    "response": data
+                    "response": [data]
                 }
 
                 response = api_client.put(url, data=return_data)
                 if response.status_code == 200:
-                    output = json.loads(response.content.decode("utf-8"))
-                    response = output.get("response")
-                    break
+                    print(Fore.LIGHTGREEN_EX + "Done ✓ " + Style.RESET_ALL)
+                    return json.loads(response.content.decode("utf-8"))
                 else:
                     print(now(), "Error: ", response.status_code, json.loads(response.content.decode("utf-8")))
             except Exception as e:
                 print(Fore.LIGHTRED_EX + "Error:" + Style.RESET_ALL, e)
-                sleep(0.5)
-            else:
-                return
-        print(Fore.LIGHTGREEN_EX + "Done ✓ " + Style.RESET_ALL)
-        return response
+                if attempt < IOAssistant.MAX_RETRIES - 1:
+                    sleep(0.5)  # Espera antes de tentar novamente
+                else:
+                    print(Fore.LIGHTRED_EX + "Failed after max retries" + Style.RESET_ALL)
+                    break  # Sai do loop após o número máximo de tentativas
