@@ -33,8 +33,20 @@ jobs:
           poetry run pyinstaller ./dev_assistant_client/dev_assistant_client.py --name dev-assistant --onefile --noconfirm --clean --icon=./icon.ico
 
       - name: Create and Upload Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ./dist/dev-assistant.exe
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version_bump_and_release.outputs.tag }}
+          release_name: Release ${{ steps.version_bump_and_release.outputs.tag }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/dev-assistant.exe
+          asset_name: dev-assistant.exe
+          asset_content_type: application/octet-stream
