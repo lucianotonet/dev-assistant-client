@@ -43,7 +43,12 @@ def git_commit_and_tag(new_version: str):
         subprocess.run(["git", "config", "user.email", "devassistant@tonet.dev"], check=True)
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
         subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
-        subprocess.run(["git", "tag", f"v{new_version}"], check=True)
+        while True:
+            try:
+                subprocess.run(["git", "tag", f"v{new_version}"], check=True)
+                break
+            except subprocess.CalledProcessError:
+                new_version = increment_version(new_version, '0.0.0', '0.0.0')
         subprocess.run(["git", "push", "origin", "HEAD", "--tags"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
         subprocess.run(f"echo ::set-output name=tag::v{new_version}", shell=True, check=True)
@@ -59,3 +64,4 @@ if __name__ == "__main__":
     update_pyproject_file(new_version)
     git_commit_and_tag(new_version)
     logging.info("Version update process completed.")
+
