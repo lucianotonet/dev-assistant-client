@@ -51,8 +51,8 @@ def git_commit_and_tag(new_version):
     print("Committing new version and creating git tag...")
     try:
         # Configurações locais para o repositório do GitHub Actions
-        subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
-        subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
+        subprocess.run(["git", "config", "user.name", "Dev Assistant AI"], check=True)
+        subprocess.run(["git", "config", "user.email", "devassistant@tonet.dev"], check=True)
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
         subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
         subprocess.run(["git", "tag", f"v{new_version}"], check=True)
