@@ -18,6 +18,8 @@ jobs:
         run: |
           # Comandos para construir seu .exe
           # Por exemplo, usando PyInstaller
+          python -m pip install --upgrade pip
+          pip install poetry
           poetry run pyinstaller ./dev_assistant_client/dev_assistant_client.py --name dev-assistant --onefile --noconfirm --clean --icon=./icon.ico
       - name: Create Release
         id: create_release
