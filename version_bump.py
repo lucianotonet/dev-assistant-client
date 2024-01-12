@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import toml
 import requests
@@ -26,7 +27,13 @@ def get_latest_git_tag():
     logging.info("Retrieving the latest git tag...")
     latest_tag = subprocess.getoutput("git describe --tags --abbrev=0")
     logging.info("Latest git tag retrieved.")
-    return latest_tag.replace('v', '')
+    # Use regex to remove non-numeric and invalid characters from the tag for comparison
+    cleaned_tag = re.sub(r'[^0-9\.]', '', latest_tag)
+    # Ensure the tag starts with a digit (version numbers must start with a digit)
+    if not cleaned_tag or not cleaned_tag[0].isdigit():
+        raise ValueError(f"Invalid tag format: {latest_tag}")
+    # Use version.parse to further clean the tag and remove invalid version parts
+    return str(version.parse(cleaned_tag))
 
 def bump_version(local_version, online_version, git_tag_version):
     logging.info("Checking versions...")
