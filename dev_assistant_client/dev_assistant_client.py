@@ -34,21 +34,25 @@ class DevAssistant:
         from .cli import cli
         await cli()
 
-    def show_ready_notification():
-        notification.notify(
-            title='Dev Assistant',
-            message='Dev Assistant está pronto para te ajudar!',
-            app_name='Dev Assistant',
-            timeout=10
-        )
-
     async def run(self, args=None):
         token = read_token()
         
         if token is None:
             await self.auth.authenticate()
         
-        self.show_ready_notification()
+        # Send first notification if the user is not using the CLI
+        if args is None:
+            icon_path = pkg_resources.resource_filename('dev_assistant_client', 'icon.ico')
+            notification.notify(
+            title='Dev Assistant',
+            message='Dev Assistant está pronto para te ajudar!',
+            app_name='Dev Assistant',
+            timeout=10,
+            app_icon=icon_path, 
+            toast=True, 
+            ticker='Dev Assistant Notification', 
+            hints={"x": 100, "y": 100}
+        )
             
         # Parse command line arguments
         parser = argparse.ArgumentParser(prog='dev-assistant-client')

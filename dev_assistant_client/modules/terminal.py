@@ -4,9 +4,10 @@ import subprocess
 import logging
 import shlex
 from pathlib import Path
-from ..utils import TERMINAL_CWD_FILE
+from ..utils import StateManager
 import platform
 import glob
+import json
 
 class TerminalModule:
     def __init__(self, instruction):
@@ -15,16 +16,20 @@ class TerminalModule:
         self.module = instruction.get("module")
         self.operation = instruction.get("operation")
         self.arguments = instruction.get("arguments")
-        self.cwd_file = TERMINAL_CWD_FILE
-        self.current_dir = self._load_cwd()  # Load or default to current working directory
         self.operations = {
             "run": self.run_command,  # Mapeia a operação 'run' para o método run_command
-            "cd": self._execute_cd,  # Mapeia a operação 'cd' para o método _execute_cd
+            "cd": self.change_directory,  # Mapeia a operação 'cd' para o método change_directory
             "execute": self.run_command,  # Mapeia a operação 'execute' para o método run_command            
         }
+        
+        self.state_manager = StateManager()  # Use StateManager to manage the terminal context
+        self.context = self._load_context()  # Load the context or set default values
+        self.current_dir = self.context.get("cwd")  # Set the directory 
     
     def execute(self):
         operation_func = self.operations.get(self.operation, self.unknown_operation)
+        if self.arguments is None:
+            self.arguments = []
         try:
             execute_response = operation_func(*self.arguments)
             return json.dumps(execute_response)
@@ -40,32 +45,33 @@ class TerminalModule:
         valid_operations = list(self.operations.keys())
         return json.dumps({'error': f'Unknown operation: {self.operation}', 'valid_operations': valid_operations})
 
-    def _load_cwd(self):
-        """Load the saved current working directory, or default to the system's CWD."""
-        try:
-            if self.cwd_file.exists():
-                with open(self.cwd_file, 'r') as file:
-                    saved_dir = file.read().strip()
-                    if Path(saved_dir).exists():
-                        return saved_dir
-        except Exception as e:
-            logging.error(f"Error loading saved CWD: {e}")
-        return os.getcwd()
+    def _load_context(self):
+        """Load the saved terminal context."""
+        base_context = {
+            "cwd": os.getcwd(),
+            "system": platform.system(),
+            "user": os.getlogin(),
+        }
+        context = self.state_manager.get_state()  # Get the state from the StateManager
+        if not context:
+            context = base_context
+        return context
 
-    def _save_cwd(self):
-        """Save the current working directory."""
-        try:
-            with open(self.cwd_file, 'w') as file:
-                file.write(self.current_dir)
-        except Exception as e:
-            logging.error(f"Error saving CWD: {e}")
+    def _save_context(self, context):
+        """Save the terminal context."""
+        context["os"] = platform.system()
+        context["user"] = os.getlogin()
+        
+        self.state_manager.set_state(context)  # Save the context using the StateManager
 
     def change_directory(self, path):
         """Change the current working directory."""
         try:
             os.chdir(path)
             self.current_dir = os.getcwd()
-            self._save_cwd()
+            # And whenever you update the context:
+            self.context["cwd"] = self.current_dir  # Update the directory in the context
+            self._save_context(self.context)  # Save the updated context to the file
             logging.info(f"Changed directory to {self.current_dir}")
             return f"Changed directory to {self.current_dir}"
         except FileNotFoundError:
@@ -73,41 +79,7 @@ class TerminalModule:
             return f"Error: Directory '{path}' not found."
         except OSError as e:
             logging.error(f"OS error: {e}")
-            return f"Error: {e}"
-
-    def _execute_cd(self, arguments):
-        """Execute 'cd' operation."""
-        if arguments:
-            full_path = self._build_full_path(arguments[0])
-            if not Path(full_path).exists():
-                logging.error(f"Directory '{full_path}' not found.")
-                return f"Error: Directory '{full_path}' not found."
-            return self.change_directory(full_path)
-        else:
-            logging.error("No path provided for 'cd' command.")
-            return "Error: No path provided for 'cd' command."
-
-    def _build_full_path(self, path):
-        """Build a full path from a given input, resolving home directory references."""
-        try:
-            if path.startswith('~'):
-                return str(Path.home() / path.strip('~'))
-            elif path.lower() == 'desktop':
-                return self._get_desktop_path()
-            else:
-                return str(Path(self.current_dir) / path)
-        except Exception as e:
-            logging.error(f"Error building full_path: {e}")
-            return str(Path(self.current_dir) / path)  # Fallback to the current directory
-
-    def _get_desktop_path(self):
-        """Get the path to the desktop."""
-        if platform.system() == 'Windows':
-            return str(Path.home() / 'Desktop')
-        elif platform.system() == 'Darwin':
-            return str(Path.home() / 'Desktop')
-        else:
-            return str(Path.home() / 'Desktop')
+            return f"Error: {e}"   
 
     def run_command(self, *command_with_args):
         """Run a given command with optional arguments."""

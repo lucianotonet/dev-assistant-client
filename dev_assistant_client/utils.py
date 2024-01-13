@@ -4,6 +4,7 @@ import os
 import sys
 import uuid
 import appdirs
+import logging
 from pathlib import Path
 from colorama import Fore, Style
 from dotenv import load_dotenv
@@ -28,7 +29,7 @@ TOKEN_FILE = DOTFILES_DIR / "auth_token"
 USER_DATA_FILE = DOTFILES_DIR / "user_data"
 ABLY_TOKEN_FILE = DOTFILES_DIR / "ably_token"
 CLIENT_ID_FILE = DOTFILES_DIR / "client_id"
-TERMINAL_CWD_FILE = DOTFILES_DIR / "terminal_cwd"
+STATE = DOTFILES_DIR / "state.json"
 
 # Get certificate file and key file paths from environment variables
 CERT_FILE = os.getenv("CERT_FILE", "")
@@ -103,3 +104,60 @@ def save_token(token):
 # Function to delete the token file
 def delete_token():
     TOKEN_FILE.unlink()
+    
+class StateManager:
+    def __init__(self):
+        self.state_file = STATE
+        self.state = self._load_state()
+
+    def _load_state(self):
+        try:
+            with open(self.state_file, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            logging.error("State file not found, returning default state.")
+            return {}
+        except json.JSONDecodeError as e:
+            logging.error(f"Error decoding JSON from state file: {e}")
+            return {}
+
+    def _save_state(self):
+        temp_file = f"{self.state_file}.tmp"
+        with open(temp_file, 'w') as file:
+            json.dump(self.state, file)
+        os.rename(temp_file, self.state_file)
+
+    def get_state(self):
+        return self.state
+
+    def set_state(self, state):
+        self.state = state
+        self._save_state()
+
+    def clear_state(self):
+        self.state = {}
+        self._save_state()
+        
+    def get_or_set(self, key, default_value):
+        if key not in self.state:
+            self.state[key] = default_value
+            self._save_state()
+        return self.state[key]
+
+    def delete_key(self, key):
+        if key in self.state:
+            del self.state[key]
+            self._save_state()
+
+    def has_key(self, key):
+        return key in self.state
+
+    def get_keys(self):
+        return list(self.state.keys())
+
+    def get_values(self):
+        return list(self.state.values())
+
+    def get_items(self):
+        return list(self.state.items())
+

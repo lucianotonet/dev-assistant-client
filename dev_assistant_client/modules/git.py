@@ -1,7 +1,7 @@
 import json
 import logging
 import subprocess
-from ..utils import TERMINAL_CWD_FILE
+from ..utils import StateManager
 
 class GitModule:
     def __init__(self, instruction):
@@ -24,15 +24,16 @@ class GitModule:
             "reset": self.reset,
             "log": self.log
         }
-        self.working_directory = TERMINAL_CWD_FILE
+        self.state_manager = StateManager()  # Use StateManager to manage the git context
+        self.state = self.state_manager.get_state()  # Load the state or set default values
                     
-    def execute(self):
-        operation = self.operation
-        arguments = self.arguments
-        operation_func = self.operations.get(operation, self.unknown_operation)
+    def execute(self):        
+        if self.arguments is None:
+            self.arguments = []
+        operation_func = self.operations.get(self.operation, self.unknown_operation)
         try:
-            result = operation_func(arguments if arguments else [])
-            logging.info(f"{operation} executed successfully")
+            result = operation_func(*self.arguments)
+            logging.info(f"{self.operation} executed successfully")
             return result
         except subprocess.CalledProcessError as e:
             logging.error(f"Command failed: {e.cmd}")
@@ -55,7 +56,7 @@ class GitModule:
         logging.info(f"Running command: {' '.join(full_command)}")
         print(f"Running command: {' '.join(full_command)}")
         response = subprocess.check_output(
-            full_command, cwd=self.working_directory, stderr=subprocess.STDOUT
+            full_command, cwd=self.state.get("cwd", ""), stderr=subprocess.STDOUT
         )
         return json.dumps(response.decode("utf-8"))
 

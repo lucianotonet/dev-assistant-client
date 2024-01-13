@@ -5,7 +5,7 @@ import shutil
 import unidiff
 import logging
 from pathlib import Path
-from ..utils import TERMINAL_CWD_FILE
+from ..utils import StateManager
         
 
 # Setting up basic logging
@@ -37,10 +37,13 @@ class FilesModule:
             "set_permissions": self.set_permissions
         }
         
-        self.cwd_file = TERMINAL_CWD_FILE
-        self.current_dir = self._load_cwd()  # Load or default to current working directory
+        self.state_manager = StateManager()  # Use StateManager to manage the files context
+        self.state = self.state_manager.get_state()  # Load the state or set default values
     
     def execute(self):
+        if self.arguments is None:
+            self.arguments = []
+            
         operation_func = self.operations.get(self.operation, self.unknown_operation)
         try:
             execute_response = operation_func(*self.arguments)
@@ -56,18 +59,6 @@ class FilesModule:
         valid_operations = list(self.operations.keys())
         return json.dumps({'error': f'Unknown operation: {self.operation}', 'valid_operations': valid_operations})
 
-    def _load_cwd(self):
-        """Load the saved current working directory, or default to the system's CWD."""
-        try:
-            if Path(self.cwd_file).exists():
-                with open(self.cwd_file, 'r') as file:
-                    saved_dir = file.read().strip()
-                    if Path(saved_dir).exists():
-                        return saved_dir
-        except Exception as e:
-            logging.error(f"Error loading saved CWD: {e}")
-        return os.getcwd()
-    
     def path_exists(self, path):
         return os.path.exists(path)
 

@@ -43,12 +43,16 @@ class IOAssistant:
                     response = GitModule(instruction).execute()
                 else:
                     response = "Invalid module or operation"                
-                print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
             except Exception as e:
                 logging.error("Error executing request", exc_info=True)
                 response = json.dumps({'error': f'Error on the CLI: {str(e)}'}, ensure_ascii=False)
                 print(Fore.LIGHTRED_EX + "Fail ✗" + Style.RESET_ALL)
                 sleep(1)  # wait before retrying
+                continue
+            else:
+                break
+            
+        print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
         return response
 
     @staticmethod
