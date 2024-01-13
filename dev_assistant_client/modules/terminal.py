@@ -79,6 +79,9 @@ class TerminalModule:
         """Execute 'cd' operation."""
         if arguments:
             full_path = self._build_full_path(arguments[0])
+            if not Path(full_path).exists():
+                logging.error(f"Directory '{full_path}' not found.")
+                return f"Error: Directory '{full_path}' not found."
             return self.change_directory(full_path)
         else:
             logging.error("No path provided for 'cd' command.")
