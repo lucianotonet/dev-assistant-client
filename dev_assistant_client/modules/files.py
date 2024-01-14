@@ -18,6 +18,11 @@ class FilesModule:
         self.module = instruction.get("module")
         self.operation = instruction.get("operation")
         self.arguments = instruction.get("arguments")
+        
+        self.state_manager = StateManager()  # Instancia StateManager
+        self.state = self.state_manager.get_state()  # Carrega o estado
+        
+        self.current_dir = self.state.get("cwd", os.getcwd())  # Carrega o diretório atual
         self.operations = {
             "create": self.create,
             "read": self.read,
@@ -36,9 +41,6 @@ class FilesModule:
             "create_directory": self.create_directory,
             "set_permissions": self.set_permissions
         }
-        
-        self.state_manager = StateManager()  # Use StateManager to manage the files context
-        self.state = self.state_manager.get_state()  # Load the state or set default values
     
     def execute(self):
         if self.arguments is None:

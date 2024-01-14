@@ -8,6 +8,13 @@ import logging
 from pathlib import Path
 from colorama import Fore, Style
 from dotenv import load_dotenv
+import threading
+import asyncio
+import pkg_resources
+from pystray import MenuItem as item
+import pystray
+from PIL import Image
+from plyer import notification
 
 # Load environment variables from .env file
 load_dotenv()
@@ -131,7 +138,8 @@ class StateManager:
         return self.state
 
     def set_state(self, state):
-        self.state = state
+        # Update the current state with the provided state
+        self.state.update(state)
         self._save_state()
 
     def clear_state(self):
@@ -160,4 +168,3 @@ class StateManager:
 
     def get_items(self):
         return list(self.state.items())
-

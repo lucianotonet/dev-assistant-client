@@ -2,8 +2,8 @@ import tracemalloc
 tracemalloc.start()
 import asyncio
 import argparse
-import time
-import sys
+from pystray import Icon as icon, Menu as menu, MenuItem as item
+from PIL import Image
 from plyer import notification
 from dotenv import load_dotenv
 from colorama import Fore, Style
@@ -16,12 +16,6 @@ import pkg_resources
 load_dotenv()
 
 class DevAssistant:
-    
-    def __init__(self):
-        self.auth = ClientAuth()
-        self.package_version = pkg_resources.get_distribution("dev_assistant-client").version
-        self.print_header()
-
     def print_header(self):
         print(Fore.LIGHTGREEN_EX +
             '''
@@ -35,25 +29,17 @@ class DevAssistant:
         await cli()
 
     async def run(self, args=None):
+        self.auth = ClientAuth()
+        self.systray = SysTray()
+        
+        self.package_version = pkg_resources.get_distribution("dev_assistant-client").version
+        self.print_header()
+        
         token = read_token()
         
         if token is None:
-            await self.auth.authenticate()
+            await self.auth.authenticate()                        
         
-        # Send first notification if the user is not using the CLI
-        if args is None:
-            icon_path = pkg_resources.resource_filename('dev_assistant_client', 'icon.ico')
-            notification.notify(
-            title='Dev Assistant',
-            message='Dev Assistant está pronto para te ajudar!',
-            app_name='Dev Assistant',
-            timeout=10,
-            app_icon=icon_path, 
-            toast=True, 
-            ticker='Dev Assistant Notification', 
-            hints={"x": 100, "y": 100}
-        )
-            
         # Parse command line arguments
         parser = argparse.ArgumentParser(prog='dev-assistant-client')
         subparsers = parser.add_subparsers()
@@ -69,7 +55,7 @@ class DevAssistant:
         except asyncio.CancelledError:
             print("\nTarefas do main_loop canceladas. Executando a limpeza...")
             await self.close_resources()
-        return
+            
     
     async def close_resources(self):
         """
@@ -86,22 +72,37 @@ class DevAssistant:
             await self.ably_handler.close()
         # Add the closing of other asynchronous resources here if necessary
 
-async def main():    
-    try:
-        await asyncio.create_task(DevAssistant().run())
-    except asyncio.CancelledError:
-        print("Main loop cancelado do lado de fora.")
-        
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(main())
-    except KeyboardInterrupt:
-        print("Interrupção do teclado detectada. Encerrando o programa...")
-        tasks = asyncio.all_tasks(loop)
-        for t in tasks:
-            t.cancel()
-        loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-        loop.close()
-        print("\nSee you soon 👋")
-    # No need to call loop.close() here
+    loop.run_until_complete(DevAssistant().run())
+
+class SysTray:
+    def on_start(self):
+        print('Start')
+
+    def on_stop(self):
+        print('Stop')
+
+    def on_status(self):
+        print('Status')
+    
+    def show_notification(self, title, message):
+        icon_path = pkg_resources.resource_filename('dev_assistant_client', 'icon.ico')
+        return notification.notify(
+            title=title,
+            message=message,
+            app_name='Dev Assistant',
+            app_icon=icon_path, 
+        )
+    
+    async def run(self):
+        image = Image.open("icon.ico")  # Replace with the correct path of the icon
+        menu = menu(
+            item('Start', lambda: self.on_start()),
+            item('Stop', lambda: self.on_stop()),
+            item('Status', lambda: self.on_status())
+        )
+
+        self.icon = icon
+        self.menu = menu
+        self.icon.run()

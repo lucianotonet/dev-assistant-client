@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import subprocess
 from ..utils import StateManager
 
@@ -10,6 +11,10 @@ class GitModule:
         self.module = instruction.get("module")
         self.operation = instruction.get("operation")
         self.arguments = instruction.get("arguments")
+        
+        self.state_manager = StateManager()
+        self.state = self.state_manager.get_state()  # Load the state or set default values
+        
         self.operations = {
             "clone": self.clone,
             "status": self.status,
@@ -24,8 +29,6 @@ class GitModule:
             "reset": self.reset,
             "log": self.log
         }
-        self.state_manager = StateManager()  # Use StateManager to manage the git context
-        self.state = self.state_manager.get_state()  # Load the state or set default values
                     
     def execute(self):        
         if self.arguments is None:

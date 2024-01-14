@@ -16,15 +16,16 @@ class TerminalModule:
         self.module = instruction.get("module")
         self.operation = instruction.get("operation")
         self.arguments = instruction.get("arguments")
-        self.operations = {
-            "run": self.run_command,  # Mapeia a operação 'run' para o método run_command
-            "cd": self.change_directory,  # Mapeia a operação 'cd' para o método change_directory
-            "execute": self.run_command,  # Mapeia a operação 'execute' para o método run_command            
-        }
         
-        self.state_manager = StateManager()  # Use StateManager to manage the terminal context
-        self.context = self._load_context()  # Load the context or set default values
-        self.current_dir = self.context.get("cwd")  # Set the directory 
+        self.state_manager = StateManager()  # Instancia StateManager
+        self.state = self.state_manager.get_state()  # Carrega o estado
+        
+        self.current_dir = self.state.get("cwd", os.getcwd())  # Carrega o diretório atual
+        self.operations = {
+            "run": self.run_command,
+            "cd": self.change_directory,
+            "execute": self.run_command,  # Mapeia a operação 'execute' para o método run_command 
+        }
     
     def execute(self):
         operation_func = self.operations.get(self.operation, self.unknown_operation)
@@ -68,18 +69,16 @@ class TerminalModule:
         """Change the current working directory."""
         try:
             os.chdir(path)
-            self.current_dir = os.getcwd()
-            # And whenever you update the context:
-            self.context["cwd"] = self.current_dir  # Update the directory in the context
-            self._save_context(self.context)  # Save the updated context to the file
-            logging.info(f"Changed directory to {self.current_dir}")
-            return f"Changed directory to {self.current_dir}"
+            self.state["cwd"] = os.getcwd()  # Update the directory in the state
+            self.state_manager.set_state(self.state)  # Save the updated state to the file
+            logging.info(f"Changed directory to {self.state['cwd']}")
+            return f"Changed directory to {self.state['cwd']}"
         except FileNotFoundError:
             logging.error(f"Directory '{path}' not found.")
             return f"Error: Directory '{path}' not found."
         except OSError as e:
             logging.error(f"OS error: {e}")
-            return f"Error: {e}"   
+            return f"Error: {e}"
 
     def run_command(self, *command_with_args):
         """Run a given command with optional arguments."""
@@ -97,10 +96,10 @@ class TerminalModule:
     def _run_ls(self):
         """Run 'ls' command."""
         try:
-            files = glob.glob(self.current_dir + '/*')
+            files = glob.glob(self.state['cwd'] + '/*')
             return '\n'.join(files)
         except Exception as e:
-            logging.error(f"Failed to list files in directory '{self.current_dir}': {e}")
+            logging.error(f"Failed to list files in directory '{self.state['cwd']}': {e}")
             return f"Error: {e}"
 
     def _run_other_command(self, command, arguments):
@@ -113,7 +112,7 @@ class TerminalModule:
         command_list = self._normalize_command(command, arguments)
 
         try:
-            process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='replace', cwd=self.current_dir, shell=True)
+            process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='replace', cwd=self.state['cwd'], shell=True)
             output, error = process.communicate()
 
             if process.returncode != 0:

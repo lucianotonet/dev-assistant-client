@@ -29,6 +29,7 @@ plyer = "^2.1.0"
 appdirs = "^1.4.4"
 pyinstaller = "^6.3.0"
 pusher = "^3.3.2"
+pystray = "^0.19.5"
 
 [tool.poetry.scripts]
 dev-assistant-client = "dev_assistant_client:cli"
