@@ -11,8 +11,6 @@ from dotenv import load_dotenv
 import threading
 import asyncio
 import pkg_resources
-from pystray import MenuItem as item
-import pystray
 from PIL import Image
 from plyer import notification
 

@@ -23,7 +23,8 @@ class TerminalModule:
         self.current_dir = self.state.get("cwd", os.getcwd())  # Carrega o diretório atual
         self.operations = {
             "run": self.run_command,
-            "cd": self.change_directory,
+            "cd": self.change_directory,  # Mapeia a operação 'cd' para o método change_directory
+            "cwd": self.get_current_directory,  # Mapeia a operação 'cwd' para o método get_current_directory
             "execute": self.run_command,  # Mapeia a operação 'execute' para o método run_command 
         }
     
@@ -32,7 +33,7 @@ class TerminalModule:
         if self.arguments is None:
             self.arguments = []
         try:
-            execute_response = operation_func(*self.arguments)
+            execute_response = operation_func(self.arguments)
             return json.dumps(execute_response)
         except TypeError as e:
             logging.error(f"Type error during command execution: {e}")
@@ -42,7 +43,7 @@ class TerminalModule:
         except Exception as e:
             return json.dumps({'error': f'Error in {self.operation}: {str(e)}'}, ensure_ascii=False)
 
-    def unknown_operation(self, *args):
+    def unknown_operation(self, args):
         valid_operations = list(self.operations.keys())
         return json.dumps({'error': f'Unknown operation: {self.operation}', 'valid_operations': valid_operations})
 
@@ -65,8 +66,9 @@ class TerminalModule:
         
         self.state_manager.set_state(context)  # Save the context using the StateManager
 
-    def change_directory(self, path):
+    def change_directory(self, path_list):
         """Change the current working directory."""
+        path = path_list[0] if path_list else None
         try:
             os.chdir(path)
             self.state["cwd"] = os.getcwd()  # Update the directory in the state
@@ -80,7 +82,10 @@ class TerminalModule:
             logging.error(f"OS error: {e}")
             return f"Error: {e}"
 
-    def run_command(self, *command_with_args):
+    def get_current_directory(self, args):
+        return self.state["cwd"]
+    
+    def run_command(self, command_with_args):
         """Run a given command with optional arguments."""
         if not command_with_args:
             logging.error("No command provided to run.")

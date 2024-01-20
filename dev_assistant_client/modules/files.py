@@ -84,8 +84,7 @@ class FilesModule:
             content = file.read()
         return {"content": content}
 
-    def update(self, arguments):
-        path, content = arguments.split(',')
+    def update(self, path, content):
         if not os.path.exists(path):
             return {"error": f"File does not exist: {path}"}
 
@@ -160,12 +159,7 @@ class FilesModule:
         except Exception as e:
             return {"error": f"Error renaming file: {e}"}
 
-    def apply_diff(self, arguments):
-        try:
-            path, diff_instructions = arguments.split(',')
-        except ValueError:
-            return {"error": "Invalid arguments. Expected format: 'path,diff_instructions'"}
-
+    def apply_diff(self, path, diff_instructions):
         absolute_path = Path(self.current_dir, path).resolve()
         if not self.path_exists(absolute_path):
             return {"error": f"File does not exist: {absolute_path}"}
