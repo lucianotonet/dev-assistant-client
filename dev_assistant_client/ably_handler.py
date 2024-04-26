@@ -65,7 +65,9 @@ class AblyHandler:
         # Print the current time and a message about connecting to a private channel
         print(now(), "WS private channel...", sep="\t", end="\t")
         # Get the private channel
-        privateChannel = realtime.channels.get(f"private:dev-assistant-{get_client_id()}")
+        # privateChannel = realtime.channels.get(f"private:devassistant.clients.{get_client_id()}")
+        privateChannel = realtime.channels.get(f"private:devassistant.clients.{get_client_id()}")
+
         # If the connection to the private channel fails, print an error message and return
         if privateChannel is None:
             print(Fore.LIGHTRED_EX + "Connection failed!" + Style.RESET_ALL)
@@ -75,7 +77,8 @@ class AblyHandler:
         print(Fore.LIGHTGREEN_EX + "Connected!" + Style.RESET_ALL)
 
         # Subscribe to the private channel and handle incoming messages
-        await privateChannel.subscribe(self.handle_ably_message)
+        await privateChannel.subscribe(self.execute_instruction) # TODO: How can we listen to an especific event? None seems to work as on Ably docs
+                
         # Print the current time and a message about the connection being ready and listening for instructions
         print(now(), "Connection ready!", "Listening for instructions...", sep="\t")
               
@@ -83,8 +86,21 @@ class AblyHandler:
         while True:
             await asyncio.sleep(1)  # This keeps the connection alive
         
-    async def handle_ably_message(self, message):
-               
+    async def execute_instruction(self, message):
+        if (message.data.get("status") == "processing"):
+            print(Fore.LIGHTYELLOW_EX + "Instruction " + message.data.get("id") + " in progress..." + Style.RESET_ALL, sep="\t")
+            return
+        
+        if (message.data.get("status") == "completed"):
+            print(Fore.LIGHTGREEN_EX + "Instruction " + message.data.get("id") + " completed ✓" + Style.RESET_ALL, sep="\t")
+            return
+
+        if message.data.get("status") == "failed":
+            print(Fore.LIGHTRED_EX + "Instruction " + message.data.get("id") + " failed ✗" + Style.RESET_ALL, sep="\t")
+            return
+    
+        # else is a new instruction ...
+         
         icon_path = pkg_resources.resource_filename('dev_assistant_client', 'icon.ico')
         
         from plyer import notification

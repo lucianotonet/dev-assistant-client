@@ -5,7 +5,7 @@ import shutil
 import unidiff
 import logging
 from pathlib import Path
-from ..utils import StateManager
+from ..utils import StateManager, dd
         
 
 # Setting up basic logging
@@ -48,7 +48,7 @@ class FilesModule:
             
         operation_func = self.operations.get(self.operation, self.unknown_operation)
         try:
-            execute_response = operation_func(*self.arguments)
+            execute_response = operation_func(self.arguments)
             return json.dumps(execute_response)
         except TypeError as e:
             return json.dumps({'error': f'Invalid arguments for {self.operation}: {str(e)}'}, ensure_ascii=False)

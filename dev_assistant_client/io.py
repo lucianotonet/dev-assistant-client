@@ -28,10 +28,11 @@ class IOAssistant:
         module = instruction.get("module").lower()
         operation = instruction.get("operation")
         arguments = instruction.get("arguments")
-        if arguments is not None:
-            arguments = arguments if isinstance(arguments, list) else [arguments]
-        else:
-            arguments = []
+
+        # if arguments is not None:
+        #     arguments = arguments if isinstance(arguments, list) else [arguments]
+        # else:
+        #     arguments = []
 
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
