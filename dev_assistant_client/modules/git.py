@@ -10,17 +10,114 @@ class GitModule:
         self.feedback = instruction.get("feedback")
         self.operation = instruction.get("operation")
         self.arguments = instruction.get("arguments")
-        
+
         self.state_manager = StateManager()
         self.state = self.state_manager.get_state()  # Load the state or set default values
         self.repo = Repo(self.state.get("cwd", os.getcwd()))  # Load the Git repository
-                            
-    def execute(self):        
+
+        self.operations = {
+            "add": self.add,
+            "commit": self.commit,
+            "push": self.push,
+            "pull": self.pull,
+            "checkout": self.checkout,
+            "status": self.status,
+            "clone": self.clone,
+            "branch": self.branch,
+            "merge": self.merge,
+            "rebase": self.rebase,
+            "reset": self.reset,
+            "tag": self.tag,
+            "init": self.init,
+            "remotes": self.remotes,
+            "tags": self.tags,
+            "branches": self.branches,
+            "head": self.head,
+            "index": self.index,
+            "blame": self.blame,
+            "diff": self.diff,
+            "stash": self.stash,
+            "fetch": self.fetch,
+            "log": self.log,
+            "show": self.show,
+            "rev_parse": self.rev_parse,
+            "remote": self.remote,
+            "submodule": self.submodule,
+            "git_dir": self.git_dir,
+            "working_tree_dir": self.working_tree_dir,
+            "is_dirty": self.is_dirty,
+            "is_clean": self.is_clean,
+            "is_repo": self.is_repo,
+            "get_config": self.get_config,
+            "set_config": self.set_config,
+            "unset_config": self.unset_config,
+            "get_remotes": self.get_remotes,
+            "get_branches": self.get_branches,
+            "get_tags": self.get_tags,
+            "get_head": self.get_head,
+            "get_index": self.get_index,
+            "get_blame": self.get_blame,
+            "get_diff": self.get_diff,
+            "api_spec": self.get_api_spec
+        }
+
+    def get_api_spec(self, *args):
+        return {
+            "module": "Git",
+            "operations": {
+                "add": {"summary": "Add files to the staging area.", "params": ["files"]},
+                "commit": {"summary": "Create a new commit with the staged changes.", "params": ["message"]},
+                "push": {"summary": "Push the local repository to a remote repository.", "params": ["remote", "branch"]},
+                "pull": {"summary": "Pull changes from a remote repository and merge them into the local repository.", "params": ["remote", "branch"]},
+                "checkout": {"summary": "Switch to a different branch or commit.", "params": ["branch", "commit"]},
+                "status": {"summary": "Show the current status of the repository.", "params": []},
+                "clone": {"summary": "Clone a remote repository to the local machine.", "params": ["url", "directory"]},
+                "branch": {"summary": "Create a new branch.", "params": ["name"]},
+                "merge": {"summary": "Merge two branches together.", "params": ["branch"]},
+                "rebase": {"summary": "Rebase the current branch onto another branch.", "params": ["branch"]},
+                "reset": {"summary": "Reset the repository to a previous state.", "params": ["commit"]},
+                "tag": {"summary": "Create a new tag for a commit.", "params": ["name", "commit"]},
+                "init": {"summary": "Initialize a new Git repository.", "params": []},
+                "remotes": {"summary": "List all configured remotes.", "params": []},
+                "tags": {"summary": "List all tags.", "params": []},
+                "branches": {"summary": "List all branches.", "params": []},
+                "head": {"summary": "Get the current branch.", "params": []},
+                "index": {"summary": "Get the current index.", "params": []},
+                "blame": {"summary": "Show the blame information for a file.", "params": ["file"]},
+                "diff": {"summary": "Show the differences between two files or commits.", "params": ["file", "commit"]},
+                "stash": {"summary": "Stash the current changes.", "params": []},
+                "fetch": {"summary": "Fetch changes from a remote repository.", "params": ["remote"]},
+                "log": {"summary": "Show the commit history.", "params": []},
+                "show": {"summary": "Show the details of a commit.", "params": ["commit"]},
+                "rev_parse": {"summary": "Parse a revision reference.", "params": ["revision"]},
+                "remote": {"summary": "Get or set the URL of a remote.", "params": ["name", "url"]},
+                "submodule": {"summary": "Add, delete, or update a submodule.", "params": ["command", "name", "url"]},
+                "git_dir": {"summary": "Get the Git directory of the repository.", "params": []},
+                "working_tree_dir": {"summary": "Get the working tree directory of the repository.", "params": []},
+                "is_dirty": {"summary": "Check if the repository has uncommitted changes.", "params": []},
+                "is_clean": {"summary": "Check if the repository has no uncommitted changes.", "params": []},
+                "is_repo": {"summary": "Check if the current directory is a Git repository.", "params": []},
+                "get_config": {"summary": "Get the value of a configuration variable.", "params": ["name"]},
+                "set_config": {"summary": "Set the value of a configuration variable.", "params": ["name", "value"]},
+                "unset_config": {"summary": "Unset a configuration variable.", "params": ["name"]},
+                "get_remotes": {"summary": "Get the list of configured remotes.", "params": []},
+                "get_branches": {"summary": "Get the list of branches.", "params": []},
+                "get_tags": {"summary": "Get the list of tags.", "params": []},
+                "get_head": {"summary": "Get the current branch or commit.", "params": []},
+                "get_index": {"summary": "Get the current index.", "params": []},
+                "get_blame": {"summary": "Get the blame information for a file.", "params": ["file"]},
+                "get_diff": {"summary": "Get the differences between two files or commits.", "params": ["file", "commit"]},
+            }
+        }
+
+    def execute(self):
         if self.arguments is None:
             self.arguments = []
-        operation_func = getattr(self, self.operation, self.unknown_operation)
+        operation_func = self.operations.get(self.operation, self.unknown_operation)
         try:
             result = operation_func(self.arguments)
+            if not isinstance(result, str):
+                result = json.dumps(result)
             logging.info(f"{self.operation} executed successfully with arguments {self.arguments}")
             return result
         except Exception as e:
@@ -29,7 +126,6 @@ class GitModule:
 
     def unknown_operation(self, args):
         return json.dumps({'error': f'Unknown operation: {self.operation}. Please check the operation name and try again.'})
-
     # Git operations
     def add(self, args):
         self.repo.git.add(*args)

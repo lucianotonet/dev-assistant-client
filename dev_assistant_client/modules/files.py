@@ -17,8 +17,8 @@ class FilesModule:
         self.feedback = instruction.get("feedback")
         self.module = instruction.get("module")
         self.operation = instruction.get("operation")
-        self.arguments = instruction.get("arguments")
-        
+        self.arguments = instruction.get("arguments", [])
+
         self.state_manager = StateManager()  # Instancia StateManager
         self.state = self.state_manager.get_state()  # Carrega o estado
         
@@ -29,7 +29,7 @@ class FilesModule:
             "update": self.update,
             "append": self.append,
             "delete": self.delete,
-            "list": self.list_dir,
+            "list_dir": self.list_dir,
             "copy": self.copy,
             "move": self.move,
             "rename": self.rename,
@@ -39,16 +39,37 @@ class FilesModule:
             "is_dir": self.is_dir,
             "get_size": self.get_size,
             "create_directory": self.create_directory,
-            "set_permissions": self.set_permissions
+            "set_permissions": self.set_permissions,
+            "api_spec": self.get_api_spec
+        }        
+
+    def get_api_spec(self, *args):
+        return {
+            "module": "Files",
+            "operations": {
+                "create": {"summary": "Create a file", "parameters": [{"name": "path", "in": "query", "type": "string"}, {"name": "content", "in": "query", "type": "string"}]},
+                "read": {"summary": "Read a file", "parameters": [{"name": "path", "in": "query", "type": "string"}], "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "properties": {"content": {"type": "string"}}}}}}}},
+                "update": {"summary": "Update a file", "parameters": [{"name": "path", "in": "query", "type": "string"}, {"name": "content", "in": "query", "type": "string"}]},
+                "append": {"summary": "Append content to a file", "parameters": [{"name": "path", "in": "query", "type": "string"}, {"name": "content", "in": "query", "type": "string"}]},
+                "delete": {"summary": "Delete a file", "parameters": [{"name": "path", "in": "query", "type": "string"}]},
+                "list_dir": {"summary": "List directory contents", "parameters": [{"name": "path", "in": "query", "type": "string"}], "responses": {"200": {"content": {"application/json": {"schema": {"type": "array", "items": {"type": "string"}}}}}}},
+                "copy": {"summary": "Copy a file", "parameters": [{"name": "source", "in": "query", "type": "string"}, {"name": "destination", "in": "query", "type": "string"}]},
+                "move": {"summary": "Move a file", "parameters": [{"name": "source", "in": "query", "type": "string"}, {"name": "destination", "in": "query", "type": "string"}]},
+                "rename": {"summary": "Rename a file", "parameters": [{"name": "source", "in": "query", "type": "string"}, {"name": "destination", "in": "query", "type": "string"}]},
+                "apply_diff": {"summary": "Apply a diff to a file", "parameters": [{"name": "path", "in": "query", "type": "string"}, {"name": "diff_instructions", "in": "query", "type": "string"}]},
+                "exists": {"summary": "Check if a file or directory exists", "parameters": [{"name": "path", "in": "query", "type": "string"}], "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "properties": {"exists": {"type": "boolean"}}}}}}}},
+                "is_file": {"summary": "Check if a path is a file", "parameters": [{"name": "path", "in": "query", "type": "string"}], "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "properties": {"is_file": {"type": "boolean"}}}}}}}},
+                "is_dir": {"summary": "Check if a path is a directory", "parameters": [{"name": "path", "in": "query", "type": "string"}], "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "properties": {"is_dir": {"type": "boolean"}}}}}}}},
+                "get_size": {"summary": "Get a file size", "parameters": [{"name": "path", "in": "query", "type": "string"}], "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "properties": {"size": {"type": "integer"}}}}}}}},
+                "create_directory": {"summary": "Create a directory", "parameters": [{"name": "path", "in": "query", "type": "string"}]},
+                "set_permissions": {"summary": "Set file permissions", "parameters": [{"name": "path", "in": "query", "type": "string"}, {"name": "mode", "in": "query", "type": "string"}]}
+            }
         }
     
     def execute(self):
-        if self.arguments is None:
-            self.arguments = []
-            
         operation_func = self.operations.get(self.operation, self.unknown_operation)
         try:
-            execute_response = operation_func(self.arguments)
+            execute_response = operation_func(*self.arguments)
             return json.dumps(execute_response)
         except TypeError as e:
             return json.dumps({'error': f'Invalid arguments for {self.operation}: {str(e)}'}, ensure_ascii=False)
@@ -56,7 +77,7 @@ class FilesModule:
             return json.dumps({'error': str(e)}, ensure_ascii=False)
         except Exception as e:
             return json.dumps({'error': f'Error in {self.operation}: {str(e)}'}, ensure_ascii=False)
-
+    
     def unknown_operation(self, *args):
         valid_operations = list(self.operations.keys())
         return json.dumps({'error': f'Unknown operation: {self.operation}', 'valid_operations': valid_operations})

@@ -33,6 +33,3 @@
 | Files    | get_size         | Obter o tamanho de um arquivo             |
 | Files    | create_directory | Criar um diretório                        |
 | Files    | set_permissions  | Definir permissões de arquivos/diretórios |
-
-## Observação de Correção
-- Problema com a inserção de '\n' no arquivo ao invés de criar uma nova linha. Isto deve ser corrigido para garantir a formatação adequada dos resultados de teste.

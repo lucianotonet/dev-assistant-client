@@ -15,6 +15,31 @@ class IOAssistant:
     MAX_RETRIES = 3
 
     @staticmethod
+    def collect_api_specs(module_name=None):
+        modules = {
+            "files": FilesModule,
+            "terminal": TerminalModule,
+            "git": GitModule
+        }
+        
+        if module_name:
+            module = modules.get(module_name.lower())
+            if not module:
+                return {"error": "Invalid module name"}
+            modules_to_collect = [module]
+        else:
+            modules_to_collect = modules.values()
+        
+        api_index = {}
+        
+        for module in modules_to_collect:
+            instance = module({})
+            api_spec = instance.get_api_spec()
+            api_index[api_spec["module"]] = api_spec["operations"]
+        
+        return api_index
+    
+    @staticmethod
     def execute_request(instruction):
         print(
             now(),
@@ -29,11 +54,6 @@ class IOAssistant:
         operation = instruction.get("operation")
         arguments = instruction.get("arguments")
 
-        # if arguments is not None:
-        #     arguments = arguments if isinstance(arguments, list) else [arguments]
-        # else:
-        #     arguments = []
-
         for _ in range(IOAssistant.MAX_RETRIES):
             try:
                 if module == "files":
@@ -42,8 +62,10 @@ class IOAssistant:
                     response = TerminalModule(instruction).execute()
                 elif module == "git":
                     response = GitModule(instruction).execute()
+                elif not module or operation == "api_spec": # TODO: Check this Luciano
+                    response = json.dumps(IOAssistant.collect_api_specs(), ensure_ascii=False)
                 else:
-                    response = "Invalid module or operation"                
+                    response = "Invalid module or operation"
             except Exception as e:
                 logging.error("Error executing request", exc_info=True)
                 response = json.dumps({'error': f'Error on the CLI: {str(e)}'}, ensure_ascii=False)
@@ -52,7 +74,7 @@ class IOAssistant:
                 continue
             else:
                 break
-            
+
         print(Fore.LIGHTGREEN_EX + "Done ✓" + Style.RESET_ALL)
         return response
 

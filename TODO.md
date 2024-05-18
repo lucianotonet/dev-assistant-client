@@ -29,3 +29,5 @@ A funcionalidade da bandeja do sistema foi parcialmente implementada no `dev_ass
 ### Considerações Adicionais
 - Garantir que a funcionalidade não interfira nas operações de linha de comando existentes do Dev Assistant CLI.
 - Considerar a possibilidade de configurações personalizadas para o menu da bandeja do sistema, permitindo que os usuários escolham quais operações desejarão acessar rapidamente.
+
+

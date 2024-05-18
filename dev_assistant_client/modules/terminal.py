@@ -26,6 +26,18 @@ class TerminalModule:
             "cd": self.change_directory,  # Mapeia a operação 'cd' para o método change_directory
             "cwd": self.get_current_directory,  # Mapeia a operação 'cwd' para o método get_current_directory
             "execute": self.run_command,  # Mapeia a operação 'execute' para o método run_command 
+            "api_spec": self.get_api_spec
+        }
+        
+    def get_api_spec(self, *args):
+        return {
+            "module": "Terminal",
+            "operations": {
+                "run": {"summary": "Run a command", "parameters": [{"name": "command_with_args", "in": "query", "type": "string", "description": "The command to run with its arguments"}]},
+                "cd": {"summary": "Change the current working directory", "parameters": [{"name": "path_list", "in": "query", "type": "string", "description": "The path or paths to change the directory to, separated by a space"}]},
+                "cwd": {"summary": "Get the current working directory", "parameters": [], "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "properties": {"cwd": {"type": "string"}}}}}}}},
+                "execute": {"summary": "Run a command", "parameters": [{"name": "command_with_args", "in": "query", "type": "string", "description": "The command to run with its arguments"}]}
+            }
         }
     
     def execute(self):
@@ -71,8 +83,9 @@ class TerminalModule:
         path = path_list[0] if path_list else None
         try:
             os.chdir(path)
+            self.state = self._load_context()
             self.state["cwd"] = os.getcwd()  # Update the directory in the state
-            self.state_manager.set_state(self.state)  # Save the updated state to the file
+            self._save_context(self.state)  # Save the updated state to the file
             logging.info(f"Changed directory to {self.state['cwd']}")
             return f"Changed directory to {self.state['cwd']}"
         except FileNotFoundError:
