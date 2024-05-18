@@ -30,15 +30,15 @@ Dev Assistant CLI is designed to streamline your development process by offering
 - Create a Dev Assistant account at [devassistant.tonet.dev](https://devassistant.tonet.dev)
 - Generate a token at [https://devassistant.tonet.dev/user/api-tokens](https://devassistant.tonet.dev/user/api-tokens) for Dev Assistant GPT and save it. You will need it later.
 - Install the local client:
-  - [Install Python](https://www.python.org/downloads/)
-  - Run `pip install dev-assistant-client` in your terminal
+  - [Install Poetry](https://python-poetry.org/docs/#installation)
+  - Run `poetry install` to install the package and its dependencies
 
 ## Usage
 
 Once installed, just run the following:
 
 ```bash
-dev-assistant
+poetry run dev-assistant
 ```
 
 If the CLI is not already authenticated, it will open a browser window where you will be provided with a token. Copy the token including the pipe, and return to the terminal.
@@ -100,8 +100,8 @@ We welcome contributions! If you have an idea for an improvement or have found a
 - Fork the repository
 - Clone your fork
 - Go to the project folder
-- Install Dev Assistant Client in local mode with `pip install -e .` or `poetry install`
-- Run `dev-assistant` in your terminal to start the CLI. You can use poetry to run the CLI with `poetry run dev-assistant`
+- Install Dev Assistant Client in local mode with `poetry install`
+- Run `poetry run dev-assistant` in your terminal to start the CLI.
 - Make your changes
 - Test your changes
 - Commit your changes
