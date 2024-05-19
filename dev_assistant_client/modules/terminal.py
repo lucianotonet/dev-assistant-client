@@ -28,8 +28,8 @@ class TerminalModule:
             "execute": self.run_command,  # Mapeia a operação 'execute' para o método run_command 
             "api_spec": self.get_api_spec
         }
-        
-    def get_api_spec(self, *args):
+
+    def get_api_spec(self):
         return {
             "module": "Terminal",
             "operations": {
@@ -39,21 +39,17 @@ class TerminalModule:
                 "execute": {"summary": "Run a command", "parameters": [{"name": "command_with_args", "in": "query", "type": "string", "description": "The command to run with its arguments"}]}
             }
         }
-    
+
     def execute(self):
-        operation_func = self.operations.get(self.operation, self.unknown_operation)
-        if self.arguments is None:
-            self.arguments = []
+        operation = self.operation
+        arguments = self.arguments
+
         try:
-            execute_response = operation_func(self.arguments)
-            return json.dumps(execute_response)
-        except TypeError as e:
-            logging.error(f"Type error during command execution: {e}")
-            return json.dumps({'error': f'Error: Type error - {str(e)}'}, ensure_ascii=False)
-        except FileNotFoundError as e:
-            return json.dumps({'error': str(e)}, ensure_ascii=False)
-        except Exception as e:
-            return json.dumps({'error': f'Error in {self.operation}: {str(e)}'}, ensure_ascii=False)
+            operation_func = self.operations[operation]
+            result = operation_func(arguments)
+            return json.dumps({"result": result})
+        except KeyError:
+            return json.dumps({"error": "Unknown operation"})
 
     def unknown_operation(self, args):
         valid_operations = list(self.operations.keys())
@@ -78,38 +74,29 @@ class TerminalModule:
         
         self.state_manager.set_state(context)  # Save the context using the StateManager
 
-    def change_directory(self, path_list):
-        """Change the current working directory."""
-        path = path_list[0] if path_list else None
+    def change_directory(self, path):
+        path = path if path else "~"
+
         try:
             os.chdir(path)
-            self.state = self._load_context()
-            self.state["cwd"] = os.getcwd()  # Update the directory in the state
-            self._save_context(self.state)  # Save the updated state to the file
-            logging.info(f"Changed directory to {self.state['cwd']}")
+            self.state["cwd"] = os.getcwd()  # Atualiza o estado do diretório atual
+            self.state_manager.set_state(self.state)  # Salva o estado atualizado
+
+            # Check if the directory exists before returning a message
+            if not os.path.isdir(self.state["cwd"]):
+                raise FileNotFoundError(f"Directory '{path}' not found.")
+
             return f"Changed directory to {self.state['cwd']}"
-        except FileNotFoundError:
-            logging.error(f"Directory '{path}' not found.")
-            return f"Error: Directory '{path}' not found."
-        except OSError as e:
-            logging.error(f"OS error: {e}")
-            return f"Error: {e}"
+        except FileNotFoundError as e:
+            return {"result": f"Error: {e}"}
+        except Exception as e:
+            return {"result": f"Error: {e}"}
 
     def get_current_directory(self, args):
         return self.state["cwd"]
-    
+
     def run_command(self, command_with_args):
-        """Run a given command with optional arguments."""
-        if not command_with_args:
-            logging.error("No command provided to run.")
-            return "Error: No command provided to run."
-
-        command, *arguments = command_with_args  # Separa o comando dos argumentos
-
-        if command == 'ls':
-            return self._run_ls()
-        else:
-            return self._run_other_command(command, arguments)
+        command, *arguments = command_with_args
 
     def _run_ls(self):
         """Run 'ls' command."""
@@ -126,8 +113,9 @@ class TerminalModule:
             logging.error("No command provided to run.")
             return "Error: No command provided to run."
 
-        # Normaliza o comando para o ambiente correto
-        command_list = self._normalize_command(command, arguments)
+        if command.lower() == "clear":
+            os.system("cls" if platform.system() == "Windows" else "clear")
+            return "Screen cleared."
 
         try:
             process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='replace', cwd=self.state['cwd'], shell=True)
@@ -135,7 +123,6 @@ class TerminalModule:
 
             if process.returncode != 0:
                 error_message = error.strip() if error else 'Unknown error'
-                logging.error(f"Command '{' '.join(command_list)}' failed with error: {error_message}")
                 return f"Error: {error_message}"
 
             return output.strip() if output and output.strip() else "Success: Command executed without output."

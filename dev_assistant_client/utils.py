@@ -58,13 +58,14 @@ def get_client_id():
         # If the file does not exist, generate a new client id
         client_id = str(uuid.uuid4())
         # Save the client id to the file
-        CLIENT_ID_FILE.write_text(client_id)
+        with open(CLIENT_ID_FILE, "w") as file:
+            file.write(client_id)
         # Return the client id
         return client_id
 
 # Get the client id
 CLIENT_ID = get_client_id()
-    
+
 # Define headers for API requests
 HEADERS = {
     "Accept": "application/json",
@@ -108,8 +109,11 @@ def save_token(token):
 
 # Function to delete the token file
 def delete_token():
-    TOKEN_FILE.unlink()
-    
+    try:
+        TOKEN_FILE.unlink()
+    except FileNotFoundError:
+        pass
+
 class StateManager:
     def __init__(self):
         self.state_file = STATE
@@ -130,7 +134,7 @@ class StateManager:
         temp_file = f"{self.state_file}.tmp"
         with open(temp_file, 'w') as file:
             json.dump(self.state, file)
-        os.rename(temp_file, self.state_file)
+        os.replace(temp_file, self.state_file)
 
     def get_state(self):
         return self.state
@@ -143,7 +147,7 @@ class StateManager:
     def clear_state(self):
         self.state = {}
         self._save_state()
-        
+
     def get_or_set(self, key, default_value):
         if key not in self.state:
             self.state[key] = default_value

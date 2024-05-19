@@ -138,11 +138,10 @@ class FilesModule:
             return {"error": f"Directory does not exist: {absolute_path}"}
 
         try:
-            files = os.listdir(absolute_path)
+            files = os.listdir(str(absolute_path))
+            return {"files": files}
         except Exception as e:
             return {"error": f"Error listing directory: {e}"}
-        
-        return {"files": files}
 
     def copy(self, source, destination):
         try:
@@ -230,4 +229,5 @@ class FilesModule:
             return {"error": f"File does not exist: {absolute_path}"}
         os.chmod(absolute_path, mode)
         return {"message": f"Permissions set for {absolute_path}"}
+
 

@@ -128,111 +128,107 @@ class GitModule:
         return json.dumps({'error': f'Unknown operation: {self.operation}. Please check the operation name and try again.'})
     # Git operations
     def add(self, args):
-        self.repo.git.add(*args)
-        return json.dumps({'success': f'Files {args} added successfully'})
+        self.repo.git.add(args[0])
+        return json.dumps({'success': f'Files {args[0]} added successfully'})
 
     def commit(self, args):
         self.repo.git.commit(m=args[0], author="Dev Assistant AI <devassistant@tonet.dev>")
         return json.dumps({'success': f'Commit successful with message: {args[0]}'})
 
     def push(self, args):
-        self.repo.git.push(*args)
-        return json.dumps({'success': f'Push to {args} successful'})
+        self.repo.git.push(args[0], args[1])
+        return json.dumps({'success': f'Push to {args[0]} successful'})
 
     def pull(self, args):
-        self.repo.git.pull(*args)
-        return json.dumps({'success': f'Pull from {args} successful'})
+        self.repo.git.pull(args[0], args[1])
+        return json.dumps({'success': f'Pull from {args[0]} successful'})
 
     def checkout(self, args):
-        self.repo.git.checkout(*args)
-        return json.dumps({'success': f'Checkout to {args} successful'})
-
-    def status(self, args):
-        status = self.repo.git.status()
-        return json.dumps({'status': f'Current status: {status}'})
+        self.repo.git.checkout(args[0])
+        return json.dumps({'success': f'Checkout to {args[0]} successful'})
 
     def clone(self, args):
-        self.repo.git.clone(*args)
-        return json.dumps({'success': f'Clone from {args} successful'})
+        self.repo.git.clone(args[0], args[1])
+        return json.dumps({'success': f'Clone from {args[0]} successful'})
 
     def branch(self, args):
-        self.repo.git.branch(*args)
-        return json.dumps({'success': f'Branch {args} created successfully'})
+        self.repo.git.branch(args[0])
+        return json.dumps({'success': f'Branch {args[0]} created successfully'})
 
     def merge(self, args):
-        self.repo.git.merge(*args)
-        return json.dumps({'success': f'Merge {args} successful'})
+        self.repo.git.merge(args[0])
+        return json.dumps({'success': f'Merge {args[0]} successful'})
 
     def rebase(self, args):
-        self.repo.git.rebase(*args)
-        return json.dumps({'success': f'Rebase {args} successful'})
+        self.repo.git.rebase(args[0])
+        return json.dumps({'success': f'Rebase {args[0]} successful'})
 
     def reset(self, args):
-        self.repo.git.reset(*args)
-        return json.dumps({'success': f'Reset {args} successful'})
+        self.repo.git.reset(args[0])
+        return json.dumps({'success': f'Reset {args[0]} successful'})
 
     def tag(self, args):
-        self.repo.git.tag(*args)
-        return json.dumps({'success': f'Tag {args} created successfully'})
+        self.repo.git.tag(args[0], args[1])
+        return json.dumps({'success': f'Tag {args[0]} created successfully'})
 
     def init(self, args):
-        self.repo.git.init(*args)
-        return json.dumps({'success': f'Initialized empty Git repository in {args}'})
+        self.repo.git.init(args[0])
+        return json.dumps({'success': f'Initialized empty Git repository in {args[0]}'})
 
     def remotes(self, args):
-        remotes = self.repo.git.remotes(*args)
+        remotes = self.repo.git.remotes(args[0])
         return json.dumps({'remotes': remotes})
 
     def tags(self, args):
-        tags = self.repo.git.tags(*args)
+        tags = self.repo.git.tags(args[0])
         return json.dumps({'tags': tags})
 
     def branches(self, args):
-        branches = self.repo.git.branches(*args)
+        branches = self.repo.git.branches(args[0])
         return json.dumps({'branches': branches})
 
     def head(self, args):
-        head = self.repo.git.head(*args)
+        head = self.repo.git.head(args[0])
         return json.dumps({'head': head})
 
     def index(self, args):
-        index = self.repo.git.index(*args)
+        index = self.repo.git.index(args[0])
         return json.dumps({'index': index})
 
     def blame(self, args):
-        blame = self.repo.git.blame(*args)
+        blame = self.repo.git.blame(args[0])
         return json.dumps({'blame': blame})
 
     def diff(self, args):
-        diff = self.repo.git.diff(*args)
+        diff = self.repo.git.diff(args[0], args[1])
         return json.dumps({'diff': diff})
 
     def stash(self, args):
-        self.repo.git.stash(*args)
-        return json.dumps({'success': f'Stashed changes in {args}'})
+        self.repo.git.stash(args[0])
+        return json.dumps({'success': f'Stashed changes in {args[0]}'})
 
     def fetch(self, args):
-        self.repo.git.fetch(*args)
-        return json.dumps({'success': f'Fetched updates from {args}'})
+        self.repo.git.fetch(args[0])
+        return json.dumps({'success': f'Fetched updates from {args[0]}'})
 
     def log(self, args):
-        log = self.repo.git.log(*args)
+        log = self.repo.git.log(args[0])
         return json.dumps({'log': log})
 
     def show(self, args):
-        show = self.repo.git.show(*args)
+        show = self.repo.git.show(args[0])
         return json.dumps({'show': show})
 
     def rev_parse(self, args):
-        rev_parse = self.repo.git.rev_parse(*args)
+        rev_parse = self.repo.git.rev_parse(args[0])
         return json.dumps({'rev_parse': rev_parse})
 
     def remote(self, args):
-        remote = self.repo.git.remote(*args)
+        remote = self.repo.git.remote(args[0])
         return json.dumps({'remote': remote})
 
     def submodule(self, args):
-        submodule = self.repo.git.submodule(*args)
+        submodule = self.repo.git.submodule(args[0])
         return json.dumps({'submodule': submodule})
 
     def git_dir(self, args):
@@ -256,49 +252,53 @@ class GitModule:
         return json.dumps({'is_repo': is_repo})
 
     def get_config(self, args):
-        config = self.repo.config(*args)
+        config = self.repo.config(args[0])
         return json.dumps({'config': config})
 
     def set_config(self, args):
-        self.repo.config(*args)
-        return json.dumps({'success': f'Set config {args}'})
+        self.repo.config(args[0], args[1])
+        return json.dumps({'success': f'Set config {args[0]}'})
 
     def unset_config(self, args):
-        self.repo.config(*args)
-        return json.dumps({'success': f'Unset config {args}'})
+        self.repo.config(args[0])
+        return json.dumps({'success': f'Unset config {args[0]}'})
 
     def get_remotes(self, args):
-        remotes = self.repo.remotes(*args)
+        remotes = self.repo.remotes(args[0])
         return json.dumps({'remotes': remotes})
 
     def get_branches(self, args):
-        branches = self.repo.branches(*args)
+        branches = self.repo.branches(args[0])
         return json.dumps({'branches': branches})
 
     def get_tags(self, args):
-        tags = self.repo.tags(*args)
+        tags = self.repo.tags(args[0])
         return json.dumps({'tags': tags})
 
     def get_head(self, args):
-        head = self.repo.head(*args)
+        head = self.repo.head(args[0])
         return json.dumps({'head': head})
 
     def get_index(self, args):
-        index = self.repo.index(*args)
+        index = self.repo.index(args[0])
         return json.dumps({'index': index})
 
     def get_blame(self, args):
-        blame = self.repo.blame(*args)
+        blame = self.repo.blame(args[0])
         return json.dumps({'blame': blame})
 
     def get_diff(self, args):
-        diff = self.repo.diff(*args)
+        diff = self.repo.diff(args[0], args[1])
         return json.dumps({'diff': diff})
 
     def get_stash(self, args):
-        stash = self.repo.stash(*args)
+        stash = self.repo.stash(args[0])
         return json.dumps({'stash': stash})
 
     def get_fetch(self, args):
-        fetch = self.repo.fetch(*args)
+        fetch = self.repo.fetch(args[0])
         return json.dumps({'fetch': fetch})
+
+    def status(self, args):
+        status = self.repo.git.status(args[0])
+        return json.dumps({'status': status})
